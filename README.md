@@ -55,11 +55,14 @@ MCP23017 INPUTS
 |:---:|:---:|
 |Ana0|Control potentiometer|
 |Ana1|N/A|
-|Ana2|N/A|
-|Ana3|N/A|
+|Ana2|USED FOR BLUETOOTH RX|
+|Ana3|USED FOR BLUETOOTH TX|
 
 ## LED screens
 Powertrain, Body and Chassis ECU's have 3.5" NEXTION HMI [NEXTION](https://www.itead.cc/display/nextion.html) serial based screens. These are connected via the I/O board where it is present.
+
+## Arduino Bluetooth CAR
+An Arduino based remote car can be controlled using #Value-Pasta-Auto
 
 ## Details of the original pasta-auto can be found at the following locations
 - GitHub: [pasta-auto](https://github.com/pasta-auto)
