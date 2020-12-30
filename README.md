@@ -1,5 +1,6 @@
 # value-pasta-auto
 I have created a lower cost approximation of the Toyota PASTA:Partable Automotive Testbed with Adaptability using consumer hardware and Arduino based software. The original didn't release details of how the hardware in the top of the case for the inputs/outputs and displays operate or are connected.
+![Value-Pasta-Auto](/value-pasta-auto.jpg)
 
 ## ECU's
 There are four ECU's in #value-pasta-auto
