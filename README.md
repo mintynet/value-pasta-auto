@@ -32,7 +32,7 @@ The I/O board is used for the Powertrain and the Chassis ECU's. These are built 
 ## Todo Bill of materials
 
 * Chassis ECU I/O board
-MCP23017 INPUTS
+MCP23017 I/O Inputs unless otherwise stated
 
 |Function port A MCP23017A|PIN|Function port B MCP23017A| |Function port A MCP23017B|PIN|Function port B MCP23017B|
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|
@@ -42,8 +42,8 @@ MCP23017 INPUTS
 | Shift Position switch DOWN | 4 | TURN switch L | | Right DOOR lock switch | 4 | N/A |
 | Shift Position switch UP | 5 | TURN switch R | | N/A | 5 | N/A |
 | Rear Wiper switch SLOW | 6 | HAZARD switch | | N/A | 6 | N/A |
-| Rear Wiper switch FAST | 7 | Start BUTTON | | N/A | 7 | N/A |
-| HORN switch | 8 | Parking Brake switch | | N/A | 8 | N/A |
+| Rear Wiper switch FAST | 7 | Start BUTTON | | N/A | 7 | Hazard OUTPUT |
+| HORN switch | 8 | Parking Brake switch | | HORN OUTPUT | 8 | Parking Brake OUTPUT |
 
 |Analogue Port|Value|
 |:---:|:---:|
@@ -53,7 +53,7 @@ MCP23017 INPUTS
 |Ana3|N/A|
 
 * Powertrain ECU I/O board
-MCP23017 INPUTS
+MCP23017 I/O Inputs unless otherwise stated
 
 |Function port A MCP23017A|PIN|Function port B MCP23017A| |Function port A MCP23017B|PIN|Function port B MCP23017B|
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|
