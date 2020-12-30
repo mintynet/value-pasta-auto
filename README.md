@@ -79,6 +79,9 @@ Powertrain, Body and Chassis ECU's have 3.5" NEXTION HMI [NEXTION](https://www.i
 ## Arduino Bluetooth CAR
 An Arduino based remote car can be controlled using #Value-Pasta-Auto
 
+## CAN message detail per bus
+To be done
+
 ## Details of the original pasta-auto can be found at the following locations
 - GitHub: [pasta-auto](https://github.com/pasta-auto)
 - Twitter: [@pasta_auto](https://twitter.com/pasta_auto)
