@@ -14,8 +14,21 @@ There are four ECU's in #value-pasta-auto
 ## Microcontroller and CAN hardware
 The micro controller hardware used in #value-pasta-auto for the ECU's is the [Teensy 4.0](https://www.pjrc.com/store/teensy40.html), which has 3 internal CAN controllers, one of which can be used for CAN-FD. The fourth CAN controller is provided by a MCP2515 controller. The CAN2.0 transceivers used are SN65HVD230DR and the CAN-FD transceiver is a MCP2562FD.
 
+## Teensy ECU Schematic
+![Teensy ECU schematic](/Hardware/teensy-ecu%20schematic.png)
+## Teensy ECU PCB Front
+![Teensy ECU pcb front](/Hardware/teensy-ecu.png)
+## Todo Bill of materials
+
 ## I/O board
 The I/O board is used for the Powertrain and the Chassis ECU's. These are built using MCP23017 I/O expander, Powertrain ECU uses one MCP23017 and the Chassis ECU uses two MCP23017.
+
+## I/O Board Schematic
+![I/O Board schematic](/Hardware/io-board%20schematic.png)
+## I/O Board PCB Front
+![I/O Board pcb front](/Hardware/io-board.png)
+## Todo Bill of materials
+
 * Chassis ECU I/O board
 MCP23017 INPUTS
 
