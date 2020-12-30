@@ -3,13 +3,15 @@ I have created a lower cost approximation of the Toyota PASTA:Partable Automotiv
 
 ## ECU's
 There are four ECU's in #value-pasta-auto
-|ECU|CAN0|CAN1|CAN2|CAN3|
+|ECU|CAN0(500kbps)|CAN1(500kbps)|CAN2(500kbps)|CAN3(500kbps)|
 |:---:|:---:|:---:|:---:|:---:|
 | - | Internal CAN0 2.0 | Internal CAN1 2.0 | Internal CAN2 2.0 (can be CAN-FD) | MCP2515 CAN 2.0 |
 | Gateway ECU | Powertrain ECU CAN0 | Chassis ECU CAN0 | Body ECU CAN0 | OBD2 port |
 | Powertrain ECU | Gateway CAN0 | unused | unused | unused |
 | Chassis ECU | Gateway CAN0 | unused | unused | unused |
 | Body ECU | Gateway CAN0 | unused | unused | unused |
+
+The Gateway ECU currently blocks traffic from the other BUSES to the OBD2 port unless a specific message is received on the OBD2 port or the serial DEBUG port.
 
 ## Microcontroller and CAN hardware
 The micro controller hardware used in #value-pasta-auto for the ECU's is the [Teensy 4.0](https://www.pjrc.com/store/teensy40.html), which has 3 internal CAN controllers, one of which can be used for CAN-FD. The fourth CAN controller is provided by a MCP2515 controller. The CAN2.0 transceivers used are SN65HVD230DR and the CAN-FD transceiver is a MCP2562FD.
