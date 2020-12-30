@@ -80,7 +80,9 @@ Powertrain, Body and Chassis ECU's have 3.5" NEXTION HMI [NEXTION](https://www.i
 An Arduino based remote car can be controlled using #Value-Pasta-Auto
 
 ## CAN message detail per bus
-To be done
+The following files show the CAN msgs that are used by #value-pasta-auto as per the original design docs from [pasta-auto bus definition](https://github.com/pasta-auto/PASTA1.0/blob/master/doc/PASTA1.0%20CAN-ID%20List%20v1.0E.pdf)
+<br>
+![Can bus definitions](/canbus.md)
 
 ## Details of the original pasta-auto can be found at the following locations
 - GitHub: [pasta-auto](https://github.com/pasta-auto)
