@@ -4,13 +4,13 @@ I have created a lower cost approximation of the Toyota PASTA:Partable Automotiv
 
 ## ECU's
 There are four ECU's in #value-pasta-auto
-|ECU|CAN0(500kbps)|CAN1(500kbps)|CAN2(500kbps)|CAN3(500kbps)|
-|:---:|:---:|:---:|:---:|:---:|
-| - | Internal CAN0 2.0 | Internal CAN1 2.0 | Internal CAN2 2.0 (can be CAN-FD) | MCP2515 CAN 2.0 |
-| Gateway ECU | Powertrain ECU CAN0 | Chassis ECU CAN0 | Body ECU CAN0 | OBD2 port |
-| Powertrain ECU | Gateway CAN0 | unused | unused | unused |
-| Chassis ECU | Gateway CAN0 | unused | unused | unused |
-| Body ECU | Gateway CAN0 | unused | unused | unused |
+|ECU|CAN0(500kbps)|CAN1(500kbps)|CAN2(500kbps)|CAN3(500kbps)|Software Status|
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| - | Internal CAN0 2.0 | Internal CAN1 2.0 | Internal CAN2 2.0 (can be CAN-FD) | MCP2515 CAN 2.0 ||
+| Gateway ECU | Powertrain ECU CAN0 | Chassis ECU CAN0 | Body ECU CAN0 | OBD2 port | Gateway function complete/no access from OBD2 |
+| Powertrain ECU | Gateway CAN0 | unused | unused | unused | UDS to be done |
+| Chassis ECU | Gateway CAN0 | unused | unused | unused | UDS to be done |
+| Body ECU | Gateway CAN0 | unused | unused | unused | UDS to be done |
 
 The Gateway ECU currently blocks traffic from the other BUSES to the OBD2 port unless a specific message is received on the OBD2 port or the serial DEBUG port.
 
