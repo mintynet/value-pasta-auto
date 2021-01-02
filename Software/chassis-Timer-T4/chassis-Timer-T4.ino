@@ -1,7 +1,9 @@
+                                                  // Teensyduino 1.53
+                                                  // Arduino 1.8.13
 #include <FlexCAN_T4.h>
-#include <Wire.h>
-#include <Adafruit_MCP23017.h>
-#include <ResponsiveAnalogRead.h>
+#include <Wire.h>                                 // version 1.0
+#include <Adafruit_MCP23017.h>                    // version 1.2.0
+#include <ResponsiveAnalogRead.h>                 // version 1.2.1
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> Can0;
 
 Adafruit_MCP23017 mcpA, mcpB;

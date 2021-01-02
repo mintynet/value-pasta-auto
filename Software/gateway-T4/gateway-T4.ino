@@ -1,5 +1,7 @@
-#include <mcp_can.h>
-#include <SPI.h>
+                                                  // Teensyduino 1.53
+                                                  // Arduino 1.8.13
+#include <mcp_can.h>                              // version 24/03/17
+#include <SPI.h>                                  // version 1.0
 boolean showDebug = false;
 boolean showFDebug = false;
 boolean firewallOpen = true;

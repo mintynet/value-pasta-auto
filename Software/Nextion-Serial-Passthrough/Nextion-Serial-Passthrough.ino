@@ -1,30 +1,12 @@
-/*
-  Multple Serial test
-
- Receives from the main serial port, sends to the others.
- Receives from serial port 1, sends to the main serial (Serial 0).
-
- This example works only with boards with more than one serial like Arduino Mega, Due, Zero etc
-
- The circuit:
- * Any serial device attached to Serial port 1
- * Serial monitor open on Serial port 0:
-
- created 30 Dec. 2008
- modified 20 May 2012
- by Tom Igoe & Jed Roach
- modified 27 Nov 2015
- by Arturo Guadalupi
-
- This example code is in the public domain.
-
- */
+                                                  // Teensyduino 1.53
+                                                  // Arduino 1.8.13
+//**************************************************
 void setup() {
   // initialize both serial ports:
   Serial.begin(250000);
   Serial5.begin(250000);
 }
-
+//**************************************************
 void loop() {
   // read from port 1, send to port 0:
   if (Serial5.available()) {
@@ -38,3 +20,4 @@ void loop() {
     Serial5.write(inByte);
   }
 }
+//**************************************************
