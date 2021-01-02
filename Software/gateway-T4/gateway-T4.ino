@@ -1,3 +1,19 @@
+#include <mcp_can.h>
+#include <SPI.h>
+boolean showDebug = false;
+boolean showFDebug = false;
+boolean firewallOpen = true;
+unsigned long unlockId = 0x123;
+unsigned long lockId = 0x124;
+byte unlockBuf[8] = {0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08};
+byte len0,len1,len2;
+byte rxBuf0[8],rxBuf1[8],rxBuf2[8];
+char msgString[128];                            // Array to store serial string
+#define             CAN3_INT    9               // Set INT to pin 9
+#define             CAN3_CS     10              // Set INT to pin 10
+#define             CAN3_SPEED  CAN_500KBPS     // 500kbps
+MCP_CAN CANMCP3(CAN3_CS);                       // CAN1 interface using CS on digital pin 10
+
 #include <FlexCAN_T4.h>
 // 0 Powertrain
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> Can0;
@@ -9,8 +25,6 @@ FlexCAN_T4<CAN3, RX_SIZE_256, TX_SIZE_16> Can2;
 #define DEBUG_PORT    Serial
 
 const byte ledDisp = 4;
-
-//static CAN_message_t msg;
 
 // 0 Powertrain
 int CANBUSSPEED0  = 500000;
@@ -87,7 +101,7 @@ const unsigned int trunkOpenSwitchMSG       = 0x477;
 //**************************************************
 
 void canSniff0(const CAN_message_t &msg0) {
-  Serial.println("RX CAN0");
+  if (showDebug) DEBUG_PORT.println("RX CAN0");
   int msgID = msg0.id;
   switch (msgID) {
     case brakeOutputIndMSG:       //0x024 (PT_TO_CS)
@@ -197,6 +211,33 @@ void canSniff0(const CAN_message_t &msg0) {
     default:
       break;
   }
+  if (firewallOpen) {
+    len0 = msg0.len;
+    for(int i=0;i<len0;i++){
+      rxBuf0[i]=msg0.buf[i];
+    }
+    CANMCP3.sendMsgBuf(msgID, 0, len0, rxBuf0);
+    if (showDebug) {
+      if (showFDebug) {
+        DEBUG_PORT.print("Msg:");
+        DEBUG_PORT.print(msgID,HEX);
+        DEBUG_PORT.print("\tLen: ");
+        DEBUG_PORT.print(len0);
+        DEBUG_PORT.print(" Data:");
+        for(int i=0;i<len0;i++) {
+          if(rxBuf0[i]<16) {
+            DEBUG_PORT.print("0");
+          }
+          DEBUG_PORT.print(rxBuf0[i],HEX);
+          if(i<len0-1){
+            DEBUG_PORT.print(":");
+          }
+        }
+        DEBUG_PORT.println();
+      }
+      DEBUG_PORT.println("CAN1 to OBD2");
+    }
+  }
   digitalWrite(ledDisp,!digitalRead(ledDisp));
   //Serial.print("MB "); Serial.print(msg.mb);
   //Serial.print("  OVERRUN: "); Serial.print(msg.flags.overrun);
@@ -216,7 +257,7 @@ void canSniff0(const CAN_message_t &msg0) {
 //**************************************************
 
 void canSniff1(const CAN_message_t &msg1) {
-  Serial.println("RX CAN1");
+  if (showDebug) DEBUG_PORT.println("RX CAN1");
   int msgID = msg1.id;
   switch (msgID) {
     case brakeOperationMSG:       //0x01a (CS_TO_AL) == CS to PT & BD
@@ -294,6 +335,33 @@ void canSniff1(const CAN_message_t &msg1) {
     default:
       break;
   }
+  if (firewallOpen) {
+    len1 = msg1.len;
+    for(int i=0;i<len1;i++){
+      rxBuf1[i]=msg1.buf[i];
+    }
+    CANMCP3.sendMsgBuf(msgID, 0, len1, rxBuf1);
+    if (showDebug) {
+      if (showFDebug) {
+        DEBUG_PORT.print("Msg:");
+        DEBUG_PORT.print(msgID,HEX);
+        DEBUG_PORT.print("\tLen: ");
+        DEBUG_PORT.print(len1);
+        DEBUG_PORT.print(" Data:");
+        for(int i=0;i<len1;i++) {
+          if(rxBuf1[i]<16) {
+            DEBUG_PORT.print("0");
+          }
+          DEBUG_PORT.print(rxBuf1[i],HEX);
+          if(i<len1-1){
+            DEBUG_PORT.print(":");
+          }
+        }
+        DEBUG_PORT.println();
+      }
+      DEBUG_PORT.println("CAN1 to OBD2");
+    }
+  }
   digitalWrite(ledDisp,!digitalRead(ledDisp));
   //Serial.print("MB "); Serial.print(msg.mb);
   //Serial.print("  OVERRUN: "); Serial.print(msg.flags.overrun);
@@ -313,7 +381,7 @@ void canSniff1(const CAN_message_t &msg1) {
 //**************************************************
 
 void canSniff2(const CAN_message_t &msg2) {
-  Serial.println("RX CAN2");
+  if (showDebug) DEBUG_PORT.println("RX CAN2");
   int msgID = msg2.id;
   switch (msgID) {
     case turnSignalIndicatorMSG:  //0x08d (BD_TO_CS)
@@ -399,6 +467,33 @@ void canSniff2(const CAN_message_t &msg2) {
     default:
       break;
   }
+  if (firewallOpen) {
+    len2 = msg2.len;
+    for(int i=0;i<len2;i++){
+      rxBuf2[i]=msg2.buf[i];
+    }
+    CANMCP3.sendMsgBuf(msgID, 0, len2, rxBuf2);
+    if (showDebug) {
+      if (showFDebug) {
+        DEBUG_PORT.print("Msg:");
+        DEBUG_PORT.print(msgID,HEX);
+        DEBUG_PORT.print("\tLen: ");
+        DEBUG_PORT.print(len2);
+        DEBUG_PORT.print(" Data:");
+        for(int i=0;i<len2;i++) {
+          if(rxBuf2[i]<16) {
+            DEBUG_PORT.print("0");
+          }
+          DEBUG_PORT.print(rxBuf2[i],HEX);
+          if(i<len2-1){
+            DEBUG_PORT.print(":");
+          }
+        }
+        DEBUG_PORT.println();
+      }
+      DEBUG_PORT.println("CAN2 to OBD2");
+    }
+  }
   digitalWrite(ledDisp,!digitalRead(ledDisp));
   //Serial.print("MB "); Serial.print(msg.mb);
   //Serial.print("  OVERRUN: "); Serial.print(msg.flags.overrun);
@@ -412,6 +507,30 @@ void canSniff2(const CAN_message_t &msg2) {
   //}
   //Serial.println();
 } // canSniff2()
+
+//**************************************************
+// serialMenu()
+//**************************************************
+
+static void serialMenu() {
+  if (DEBUG_PORT.available()) {
+    char ser = DEBUG_PORT.read();
+    switch (ser)
+    {
+      case 'd':     // debug toggle
+        showDebug = !showDebug;
+        break;
+      case 'D':     // full debug toggle
+        showFDebug = !showFDebug;
+        break;
+      case 'f':     // firewall toggle
+        firewallOpen = !firewallOpen;
+        break;
+      default:
+        break;
+    }
+  }
+} //serialMenu()
 
 //**************************************************
 // setup
@@ -443,6 +562,17 @@ void setup() {
   Can2.enableFIFOInterrupt();
   Can2.onReceive(canSniff2);
   //Can0.mailboxStatus();
+  pinMode(CAN3_INT, INPUT);                     // Configuring pin for /INT input
+  if(CANMCP3.begin(MCP_ANY, CAN3_SPEED, MCP_8MHZ) == CAN_OK){
+  DEBUG_PORT.print("CAN3:\t");
+  if (CAN3_SPEED == 12) {
+    DEBUG_PORT.print("500kbps");
+  } else if (CAN3_SPEED == 9) {
+    DEBUG_PORT.print("125kbps");
+  }
+  DEBUG_PORT.print("\tInit OK!\r\n");
+  CANMCP3.setMode(MCP_NORMAL);
+  } else DEBUG_PORT.print("CAN3: Init Fail!!!\r\n");
   while (millis()<10000) {
     // do nothing
   }
@@ -455,6 +585,7 @@ void setup() {
 //**************************************************
 
 void loop() {
+  serialMenu();
   Can0.events();
   Can1.events();
   Can2.events();
