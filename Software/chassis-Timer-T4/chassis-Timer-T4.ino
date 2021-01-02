@@ -1,4 +1,5 @@
 #include <FlexCAN_T4.h>
+#include <Wire.h>
 #include <Adafruit_MCP23017.h>
 #include <ResponsiveAnalogRead.h>
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> Can0;
@@ -544,7 +545,7 @@ void setup() {
   // Setup led Pin
   pinMode(ledDisp,OUTPUT);
   // Setup MCP23017s
-  mcpA.begin(0);
+  mcpA.begin();
   mcpB.begin(1);
   for(int i=0;i<16;i++) {
     mcpA.pinMode(i,INPUT);
@@ -609,7 +610,7 @@ void loop() {
       ecu_data.turnSwitchValueRAW = (ecu_data.turnSwitchValueRAW | 4);
     }
     
-    ecu_data.hornValueRAW = ((mcpAValue & 0x0090) >> 7);
+    ecu_data.hornValueRAW = ((mcpAValue & 0x0080) >> 7); // was 0x0090 ??
     
     curLightBit0 = ((mcpAValue & 0x0001) >> 0);
     curLightBit1 = ((mcpAValue & 0x0002) >> 1);
