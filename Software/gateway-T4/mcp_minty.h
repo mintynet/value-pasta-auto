@@ -58,14 +58,14 @@ byte tx0RTS()
   delayMicroseconds(250);
   SPI.endTransaction();
   byte res;
-  byte idx;
+  byte idx = 0;
   do {
     idx++;
     res = readCANStatus();
     res = (res & 0x08)>>3;
   } while ((!res) && (idx<TIMEOUTVALUE));
   if (idx==TIMEOUTVALUE) {
-    Serial.println("TIMEOUT");
+    //Serial.println("TIMEOUT");
     return CANSENDTIMEOUT;
   }
   return CAN_OK;

@@ -4,15 +4,16 @@
 #include "mcp_can.h"                              // version 1.5 25/09/17 from https://github.com/coryjfowler/MCP_CAN_lib modified for 10MHz SPI
 #include <SPI.h>                                  // version 1.0
 boolean       showDebug         = false;
-boolean       showFDebug        = false;
 boolean       proofDebug        = false;
-boolean       firewallOpen0     = true;
-boolean       firewallOpen1     = true;
-boolean       firewallOpen2     = true;
-unsigned long unlockId          = 0x123;
-unsigned long lockId            = 0x124;
-byte unlockBuf[8]               = {0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08};
-char                msgString[128];               // Array to store serial string
+boolean       firewallOpen0     = false;
+boolean       firewallOpen1     = false;
+boolean       firewallOpen2     = false;
+const unsigned long unlockId    = 0x123;
+const unsigned long lockId      = 0x124;
+byte unlockBuf[8]               = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07};
+long unsigned int   rxId;                         // Used for MCP3 received msgs
+unsigned char       len         = 0;              // Used for MCP3 received msgs
+unsigned char       rxBuf[8];                     // Used for MCP3 received msgs
 #define             CAN3_INT    9                 // Set INT to pin 9
 #define             CAN3_CS     10                // Set INT to pin 10
 #define             CAN3_SPEED  CAN_500KBPS       // 500kbps
@@ -226,6 +227,9 @@ void canSniff0(const CAN_message_t &msg0) {
     cnt0++;
   }
   if (firewallOpen0) {
+    if(showDebug) {
+      DEBUG_PORT.println("CAN0 to CAN3");
+    }
     //msg0.buf[5]=0xff;
     //byte sndStat = CANMCP3.sendMsgBuf(msg0.id,0,msg0.len,msg0.buf);
     sendStdTX0(msg0.id,msg0.len,msg0.buf);
@@ -335,6 +339,9 @@ void canSniff1(const CAN_message_t &msg1) {
     cnt1++;
   }
   if (firewallOpen1) {
+    if(showDebug) {
+      DEBUG_PORT.println("CAN1 to CAN3");
+    }
     //msg1.buf[6]=0xff;
     //byte sndStat = CANMCP3.sendMsgBuf(msg1.id,0,msg1.len,msg1.buf);
     sendStdTX0(msg1.id,msg1.len,msg1.buf);
@@ -452,6 +459,9 @@ void canSniff2(const CAN_message_t &msg2) {
     cnt2++;
   }
   if (firewallOpen2) {
+    if(showDebug) {
+      DEBUG_PORT.println("CAN2 to CAN3");
+    }
     //msg2.buf[7]=0xff;
     //byte sndStat = CANMCP3.sendMsgBuf(msg2.id,0,msg2.len,msg2.buf);
     sendStdTX0(msg2.id,msg2.len,msg2.buf);
@@ -483,11 +493,11 @@ static void serialMenu() {
     char ser = DEBUG_PORT.read();
     switch (ser)
     {
-      case 'd':     // debug toggle
-        showDebug = !showDebug;
+      case 'd':     // toggle DEBUG
+        showDebug=!showDebug;
         break;
-      case 'D':     // full debug toggle
-        showFDebug = !showFDebug;
+      case 'h':     // help
+        DEBUG_PORT.println("f\tToggle firewall");
         break;
       case 'f':     // firewall toggle
         firewallOpen0 = !firewallOpen0;
@@ -574,9 +584,48 @@ void loop() {
     DEBUG_PORT.print(cnt32);
     DEBUG_PORT.print(" Total:");
     DEBUG_PORT.println(cnt30+cnt31+cnt32);
-    //while(true){
+    while(true){
       //
-    //}
+    }
+  }
+  if(!digitalRead(CAN3_INT)) {
+    CANMCP3.readMsgBuf(&rxId, &len, rxBuf);
+    switch (rxId) {
+      case unlockId:
+        if((rxBuf[1] == unlockBuf[1])&(rxBuf[2] == unlockBuf[2])&(rxBuf[3] == unlockBuf[3])&(rxBuf[4] == unlockBuf[4])&(rxBuf[5] == unlockBuf[5])&(rxBuf[6] == unlockBuf[6])&(rxBuf[7] == unlockBuf[7])) {
+          if((rxBuf[0]&0x01)>>0) {
+            firewallOpen0 = true;
+            DEBUG_PORT.println("Firewall0 unlock");         
+          }
+          if((rxBuf[0]&0x02)>>1) {
+            firewallOpen1 = true;
+            DEBUG_PORT.println("Firewall1 unlock");         
+          }
+          if((rxBuf[0]&0x04)>>2) {
+            firewallOpen2 = true;
+            DEBUG_PORT.println("Firewall2 unlock");         
+          }
+        }
+        break;
+      case lockId:
+        if((rxBuf[1] == unlockBuf[1])&(rxBuf[2] == unlockBuf[2])&(rxBuf[3] == unlockBuf[3])&(rxBuf[4] == unlockBuf[4])&(rxBuf[5] == unlockBuf[5])&(rxBuf[6] == unlockBuf[6])&(rxBuf[7] == unlockBuf[7])) {
+          if((rxBuf[0]&0x01)>>0) {
+            firewallOpen0 = false;
+            DEBUG_PORT.println("Firewall0 lock");         
+          }
+          if((rxBuf[0]&0x02)>>1) {
+            firewallOpen1 = false;
+            DEBUG_PORT.println("Firewall1 lock");         
+          }
+          if((rxBuf[0]&0x04)>>2) {
+            firewallOpen2 = false;
+            DEBUG_PORT.println("Firewall2 lock");         
+          }
+        }
+        break;
+      default:
+        break;
+    }
   }
   Can0.events();
   Can1.events();
