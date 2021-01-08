@@ -21,8 +21,8 @@ The micro controller hardware used in #value-pasta-auto for the ECU's is the [Te
 ![Teensy ECU schematic](/Hardware/teensy-ecu%20schematic.png)
 ## Teensy ECU PCB Front
 ![Teensy ECU pcb front](/Hardware/teensy-ecu.png)
-[Original GERBER v1.0](/Hardware/teensy-ecu%20GERBER%20files.zip) has a fault with the WS2818b pinout current software just uses a single SMD LED instead.<br>
-[Updated GERBER v1.1](/Hardware/teensy-ECU%20GERBER%20files%20v1.1.zip) fixes the WS2818 pinout. Code would need modifying to support WS2812b.<br>
+<br>[Original GERBER v1.0](/Hardware/teensy-ecu%20GERBER%20files.zip) has a fault with the WS2818b pinout current software just uses a single SMD LED instead.
+<br>[Updated GERBER v1.1](/Hardware/teensy-ECU%20GERBER%20files%20v1.1.zip) fixes the WS2818 pinout. Code would need modifying to support WS2812b.
 ## Todo Bill of materials
 
 ## I/O board
@@ -32,7 +32,7 @@ The I/O board is used for the Powertrain and the Chassis ECU's. These are built 
 ![I/O Board schematic](/Hardware/io-board%20schematic.png)
 ## I/O Board PCB Front
 ![I/O Board pcb front](/Hardware/io-board.png)
-[Original GERBER v1.0](/Hardware/io-board%20GERBER%20files.zip) has a fault with the WS2818b pinout current software just uses a single SMD LED instead.
+<br>[Original GERBER v1.0](/Hardware/io-board%20GERBER%20files.zip) has a fault with the WS2818b pinout current software just uses a single SMD LED instead.
 ## Todo Bill of materials
 
 * Chassis ECU I/O board
