@@ -4,10 +4,10 @@
 #include "mcp_can.h"                              // version 1.5 25/09/17 from https://github.com/coryjfowler/MCP_CAN_lib modified for 10MHz SPI
 #include <SPI.h>                                  // version 1.0
 boolean       showDebug         = false;
-boolean       proofDebug        = false;
-boolean       firewallOpen0     = false;
-boolean       firewallOpen1     = false;
-boolean       firewallOpen2     = false;
+boolean       proofDebug        = true;
+boolean       firewallOpen0     = true;
+boolean       firewallOpen1     = true;
+boolean       firewallOpen2     = true;
 const unsigned long unlockId    = 0x123;
 const unsigned long lockId      = 0x124;
 byte unlockBuf[8]               = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07};
@@ -232,8 +232,7 @@ void canSniff0(const CAN_message_t &msg0) {
     }
     //msg0.buf[5]=0xff;
     //byte sndStat = CANMCP3.sendMsgBuf(msg0.id,0,msg0.len,msg0.buf);
-    sendStdTX0(msg0.id,msg0.len,msg0.buf);
-    byte sndStat = tx0RTS();
+    byte sndStat = sendTX0(msg0.id,msg0.len,msg0.buf);
     if((millis0>20000)&(millis0<21001)&(proofDebug)&(sndStat==CAN_OK)) {
       cnt30++;
     }
@@ -344,8 +343,7 @@ void canSniff1(const CAN_message_t &msg1) {
     }
     //msg1.buf[6]=0xff;
     //byte sndStat = CANMCP3.sendMsgBuf(msg1.id,0,msg1.len,msg1.buf);
-    sendStdTX0(msg1.id,msg1.len,msg1.buf);
-    byte sndStat = tx0RTS();
+    byte sndStat = sendTX0(msg1.id,msg1.len,msg1.buf);
     if((millis1>20000)&(millis1<21001)&(proofDebug)&(sndStat==CAN_OK)) {
       cnt31++;
     }
@@ -464,8 +462,7 @@ void canSniff2(const CAN_message_t &msg2) {
     }
     //msg2.buf[7]=0xff;
     //byte sndStat = CANMCP3.sendMsgBuf(msg2.id,0,msg2.len,msg2.buf);
-    sendStdTX0(msg2.id,msg2.len,msg2.buf);
-    byte sndStat = tx0RTS();
+    byte sndStat = sendTX0(msg2.id,msg2.len,msg2.buf);
     if((millis2>20000)&(millis2<21001)&(proofDebug)&(sndStat==CAN_OK)) {
       cnt32++;
     }
@@ -584,9 +581,9 @@ void loop() {
     DEBUG_PORT.print(cnt32);
     DEBUG_PORT.print(" Total:");
     DEBUG_PORT.println(cnt30+cnt31+cnt32);
-    while(true){
+    //while(true){
       //
-    }
+    //}
   }
   if(!digitalRead(CAN3_INT)) {
     CANMCP3.readMsgBuf(&rxId, &len, rxBuf);
