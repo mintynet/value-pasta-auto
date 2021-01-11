@@ -1,4 +1,4 @@
-|Msg-ID(Decimal)|Msg-ID(HEX)| Message Name | Frequency per second | Variable Name A | Variable Name B|
+|Msg-ID(Decimal)|Msg-ID(HEX)| Message Name | Frequency per second | From BUS | To BUS |
 |:---:|:---:|:---:|:---:|:---:|:---:|
 |26|01A|brakeOperationMSG|100|CH|PT|brakeValueRAW||
 |47|02F|accelerationOperationMSG|100|CH|PT|acceleratorValueRAW||
