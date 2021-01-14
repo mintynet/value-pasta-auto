@@ -108,6 +108,7 @@ byte sendTX0(unsigned long id, byte len, uint8_t *data)
   byte res;
   setupTX0Buf(id,len,data);
   res = tx0RTS();
+  return res;
 }
 
 /*void sendStdTX1 (unsigned long id, byte len, uint8_t *data)
