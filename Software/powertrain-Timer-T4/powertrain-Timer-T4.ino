@@ -78,6 +78,8 @@ const unsigned int parkingBrakeMSG          = 0x1c9;
 const unsigned int fuelAmountMSG            = 0x3d4;
 const unsigned int batteryWarningMSG        = 0x3de;
 const unsigned int ecoDrivingJudgementMSG   = 0x482;
+//reset message
+const unsigned int resetMSG                 = 0x280;
 
 struct ECU_DATA {
   unsigned int mcpA;
@@ -345,6 +347,9 @@ void canSniff(const CAN_message_t &msg) {
       break;
     case parkingBrakeMSG:
       ecu_data.parkingValueRAW = (msg.buf[0]);
+      break;
+    case resetMSG:
+      SCB_AIRCR = 0x05FA0004;
       break;
     default:
       break;

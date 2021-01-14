@@ -8,9 +8,11 @@ boolean       proofDebug        = true;
 boolean       firewallOpen0     = true;
 boolean       firewallOpen1     = true;
 boolean       firewallOpen2     = true;
+
 const unsigned long unlockId    = 0x123;
 const unsigned long lockId      = 0x124;
 byte unlockBuf[8]               = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07};
+
 long unsigned int   rxId;                         // Used for MCP3 received msgs
 unsigned char       len         = 0;              // Used for MCP3 received msgs
 unsigned char       rxBuf[8];                     // Used for MCP3 received msgs
@@ -107,6 +109,8 @@ const unsigned int seatBeltSensorMSG        = 0x457;
 const unsigned int seatBeltAlarmMSG         = 0x461;
 const unsigned int bonnetOpenSwitchMSG      = 0x46c;
 const unsigned int trunkOpenSwitchMSG       = 0x477;
+//reset message
+const unsigned int resetMSG                 = 0x280;
 
 //**************************************************
 // canSniff0() Powertrain
@@ -486,15 +490,79 @@ void canSniff2(const CAN_message_t &msg2) {
 //**************************************************
 
 static void serialMenu() {
+  CAN_message_t msg;
   if (DEBUG_PORT.available()) {
     char ser = DEBUG_PORT.read();
     switch (ser)
     {
+      case '1':     // reboot body ECU
+        msg.id = resetMSG;
+        msg.len = 0x0;
+        Can2.write(msg);
+        break;
+      case '2':     // reboot chassis ECU
+        msg.id = resetMSG;
+        msg.len = 0x0;
+        Can1.write(msg);
+        break;
+      case '3':     // reboot body and chassis ECU
+        msg.id = resetMSG;
+        msg.len = 0x0;
+        Can2.write(msg);
+        delay(50);
+        Can1.write(msg);
+        break;
+      case '4':     // reboot powertrain ECU
+        msg.id = resetMSG;
+        msg.len = 0x0;
+        Can0.write(msg);
+        break;
+      case '5':     // reboot body and powertrain ECU
+        msg.id = resetMSG;
+        msg.len = 0x0;
+        Can2.write(msg);
+        delay(50);
+        Can0.write(msg);
+        break;
+      case '6':     // reboot chassis and powertrain ECU
+        msg.id = resetMSG;
+        msg.len = 0x0;
+        Can1.write(msg);
+        delay(50);
+        Can0.write(msg);
+        break;
+      case '7':     // reboot body, chassis and powertrain ECU
+        msg.id = resetMSG;
+        msg.len = 0x0;
+        Can2.write(msg);
+        delay(50);
+        Can1.write(msg);
+        delay(50);
+        Can0.write(msg);
+        break;
+      case '8':     // reboot gateway ECU
+        SCB_AIRCR = 0x05FA0004;
+        break;
+      case 'F':     // reboot all ECUs
+        msg.id = resetMSG;
+        msg.len = 0x0;
+        Can2.write(msg);
+        delay(50);
+        Can1.write(msg);
+        delay(50);
+        Can0.write(msg);
+        delay(50);
+        SCB_AIRCR = 0x05FA0004;
+        break;
       case 'd':     // toggle DEBUG
         showDebug=!showDebug;
         break;
       case 'h':     // help
         DEBUG_PORT.println("f\tToggle firewall");
+        DEBUG_PORT.println("1\tReboot Body ECU");
+        DEBUG_PORT.println("2\tReboot Chassis ECU");
+        DEBUG_PORT.println("4\tReboot Powertrain ECU");
+        DEBUG_PORT.println("8\tReboot Gateway ECU");
         break;
       case 'f':     // firewall toggle
         firewallOpen0 = !firewallOpen0;
@@ -619,6 +687,9 @@ void loop() {
             DEBUG_PORT.println("Firewall2 lock");         
           }
         }
+        break;
+      case resetMSG:
+        SCB_AIRCR = 0x05FA0004;
         break;
       default:
         break;

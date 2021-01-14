@@ -59,6 +59,8 @@ const unsigned int seatBeltSensorMSG        = 0x457;
 const unsigned int seatBeltAlarmMSG         = 0x461;
 const unsigned int bonnetOpenSwitchMSG      = 0x46c;
 const unsigned int trunkOpenSwitchMSG       = 0x477;
+//reset message
+const unsigned int resetMSG                 = 0x280;
 
 struct ECU_DATA {
   unsigned int mcpA;
@@ -309,6 +311,9 @@ void canSniff(const CAN_message_t &msg) {
       break;
     case rDoorSwWindowMSG:
       ecu_data.rDoorSwValueRAW = (msg.buf[0]);
+      break;
+    case resetMSG:
+      SCB_AIRCR = 0x05FA0004;
       break;
     default:
       break;

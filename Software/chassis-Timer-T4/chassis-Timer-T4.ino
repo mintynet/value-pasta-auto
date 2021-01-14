@@ -107,6 +107,8 @@ const unsigned int seatBeltSensorMSG        = 0x457;
 const unsigned int seatBeltAlarmMSG         = 0x461;
 const unsigned int bonnetOpenSwitchMSG      = 0x46c;
 const unsigned int trunkOpenSwitchMSG       = 0x477;
+//reset message
+const unsigned int resetMSG                 = 0x280;
 
 struct ECU_DATA {
   unsigned int mcpA;
@@ -245,14 +247,17 @@ void can20Hz() {
   msg.id = lightSwitchMSG;
   msg.len = 8;
   msg.buf[0] = ecu_data.lightSwValueRAW;
+  msg.buf[1] = 0x0;
   Can0.write(msg);
   delayMicroseconds(msgSpacing);
   msg.id = lightFlashMSG;
   msg.buf[0] = ecu_data.lightFlValueRAW;
+  msg.buf[1] = 0x0;
   Can0.write(msg);
   delayMicroseconds(msgSpacing);
   msg.id = parkingBrakeMSG;
   msg.buf[0] = ecu_data.parkingValueRAW;
+  msg.buf[1] = 0x0;
   Can0.write(msg);
   b20Hz = 0;
   digitalWrite(ledDisp,!digitalRead(ledDisp));
@@ -268,22 +273,27 @@ void can10Hz() {
   msg.id = wiperSwitchFrontMSG;
   msg.len = 8;
   msg.buf[0] = ecu_data.wiperFSwValueRAW;
+  msg.buf[1] = 0x0;
   Can0.write(msg);
   delayMicroseconds(msgSpacing);
   msg.id = wiperSwitchRearMSG;
   msg.buf[0] = ecu_data.wiperRSwValueRAW;
+  msg.buf[1] = 0x0;
   Can0.write(msg);
   delayMicroseconds(msgSpacing);
   msg.id = doorLockUnlockMSG;
   msg.buf[0] = ecu_data.doorLockValueRAW;
+  msg.buf[1] = 0x0;
   Can0.write(msg);
   delayMicroseconds(msgSpacing);
   msg.id = lDoorSwWindowMSG;
   msg.buf[0] = ecu_data.lDoorSwValueRAW;
+  msg.buf[1] = 0x0;
   Can0.write(msg);
   delayMicroseconds(msgSpacing);
   msg.id = rDoorSwWindowMSG;
   msg.buf[0] = ecu_data.rDoorSwValueRAW;
+  msg.buf[1] = 0x0;
   Can0.write(msg);
   b10Hz = 0;
   digitalWrite(ledDisp,!digitalRead(ledDisp));
@@ -424,6 +434,9 @@ void canSniff(const CAN_message_t &msg) {
       break;
     case trunkOpenSwitchMSG:
       ecu_data.trunkOpenSwitchRAW = (msg.buf[0]);
+      break;
+    case resetMSG:
+      SCB_AIRCR = 0x05FA0004;
       break;
     default:
       break;
