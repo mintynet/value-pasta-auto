@@ -24,13 +24,13 @@
 #define MCP_RTS_TX2         0x84
 #define MCP_RTS_ALL         0x87
 
-void setupTX0Buf (unsigned long id, byte len, uint8_t *data)
+void setupTX0Buf (unsigned long id, byte len, uint8_t *data, bool fastMode)
 {
   uint16_t canid;
   uint8_t tbufdata[4];
   canid = (uint16_t)(id & 0x0FFFF);
   
-  SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
+  SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
   // LOAD TX BUFFER 0
   digitalWrite(CAN0_CS, LOW);
   //PORTB = PORTB & B11111011;
@@ -59,14 +59,16 @@ void setupTX0Buf (unsigned long id, byte len, uint8_t *data)
   //PORTB = PORTB | B00000100;
   digitalWrite(CAN0_CS, HIGH);
   SPI.endTransaction();
-  delayMicroseconds(250);
+  if (!fastMode) {
+    delayMicroseconds(150);
+  }
 }
 
 byte readCANStatus() // same as MCP_CAN::mcp2515_readStatus
 {
   byte ret;
   
-  SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
+  SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
   digitalWrite(CAN0_CS, LOW);
   //PORTB = PORTB & B11111011;
   SPI.transfer(MCP_READ_STATUS);
@@ -81,7 +83,7 @@ byte readCANStatus() // same as MCP_CAN::mcp2515_readStatus
 byte tx0RTS()
 {
   // READY TO SEND
-  SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
+  SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
   digitalWrite(CAN0_CS, LOW);
   //PORTB = PORTB & B11111011;
   SPI.transfer(MCP_RTS_TX0);
@@ -103,17 +105,17 @@ byte tx0RTS()
   return CAN_OK;
 }
 
-byte sendTX0(unsigned long id, byte len, uint8_t *data)
+byte sendTX0(unsigned long id, byte len, uint8_t *data, bool fastMode)
 {
   byte res;
-  setupTX0Buf(id,len,data);
+  setupTX0Buf(id,len,data,fastMode);
   res = tx0RTS();
   return res;
 }
 
 /*void sendStdTX1 (unsigned long id, byte len, uint8_t *data)
 {
-  SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
+  SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
   // LOAD TX BUFFER 0
   digitalWrite(CAN0_CS, LOW);
   SPI.transfer(MCP_LOAD_TX1);
@@ -132,7 +134,7 @@ byte sendTX0(unsigned long id, byte len, uint8_t *data)
 
 void sendStdTX2 (unsigned long id, byte len, uint8_t *data)
 {
-  SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
+  SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
   // LOAD TX BUFFER 0
   digitalWrite(CAN0_CS, LOW);
   SPI.transfer(MCP_LOAD_TX2);
@@ -151,7 +153,7 @@ void sendStdTX2 (unsigned long id, byte len, uint8_t *data)
 
 byte tx1RTS()
 {
-  SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
+  SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
   // READY TO SEND
   digitalWrite(CAN0_CS, LOW);
   SPI.transfer(MCP_RTS_TX1);
@@ -174,7 +176,7 @@ byte tx1RTS()
 
 byte tx2RTS()
 {
-  SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
+  SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
   // READY TO SEND
   digitalWrite(CAN0_CS, LOW);
   SPI.transfer(MCP_RTS_TX2);
@@ -197,7 +199,7 @@ byte tx2RTS()
 
 void txALLRTS()
 {
-  SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
+  SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
   // READY TO SEND
   digitalWrite(CAN0_CS, LOW);
   SPI.transfer(MCP_RTS_ALL);

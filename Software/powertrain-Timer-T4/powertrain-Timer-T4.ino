@@ -17,7 +17,7 @@ const byte ana0x01 = A0;
 ResponsiveAnalogRead analog0(ana0x01,true);
 
 const byte ledDisp = 4;
-const boolean gDebug = false;
+const boolean gDebug = true;
 
 static CAN_message_t msg;
 

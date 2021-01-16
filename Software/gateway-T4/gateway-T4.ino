@@ -3,11 +3,11 @@
 #include "mcp_minty.h"
 #include "mcp_can.h"                              // version 1.5 25/09/17 from https://github.com/coryjfowler/MCP_CAN_lib modified for 10MHz SPI
 #include <SPI.h>                                  // version 1.0
-boolean       showDebug         = false;
+boolean       gDebug            = false;
 boolean       proofDebug        = true;
-boolean       firewallOpen0     = true;
-boolean       firewallOpen1     = true;
-boolean       firewallOpen2     = true;
+boolean       firewallOpen0     = false;
+boolean       firewallOpen1     = false;
+boolean       firewallOpen2     = false;
 
 const unsigned long unlockId    = 0x123;
 const unsigned long lockId      = 0x124;
@@ -117,7 +117,7 @@ const unsigned int resetMSG                 = 0x280;
 //**************************************************
 
 void canSniff0(const CAN_message_t &msg0) {
-  if (showDebug) DEBUG_PORT.println("RX CAN0");
+  if (gDebug) DEBUG_PORT.println("RX CAN0");
   switch (msg0.id) {
     case brakeOutputIndMSG:       //0x024 (PT_TO_CS)
       // 1
@@ -231,12 +231,12 @@ void canSniff0(const CAN_message_t &msg0) {
     cnt0++;
   }
   if (firewallOpen0) {
-    if(showDebug) {
+    if(gDebug) {
       DEBUG_PORT.println("CAN0 to CAN3");
     }
     //msg0.buf[5]=0xff;
     //byte sndStat = CANMCP3.sendMsgBuf(msg0.id,0,msg0.len,msg0.buf);
-    byte sndStat = sendTX0(msg0.id,msg0.len,msg0.buf);
+    byte sndStat = sendTX0(msg0.id,msg0.len,msg0.buf,1);
     if((millis0>20000)&(millis0<21001)&(proofDebug)&(sndStat==CAN_OK)) {
       cnt30++;
     }
@@ -260,7 +260,7 @@ void canSniff0(const CAN_message_t &msg0) {
 //**************************************************
 
 void canSniff1(const CAN_message_t &msg1) {
-  if (showDebug) DEBUG_PORT.println("RX CAN1");
+  if (gDebug) DEBUG_PORT.println("RX CAN1");
   switch (msg1.id) {
     case brakeOperationMSG:       //0x01a (CS_TO_AL) == CS to PT & BD
       // 0
@@ -342,12 +342,12 @@ void canSniff1(const CAN_message_t &msg1) {
     cnt1++;
   }
   if (firewallOpen1) {
-    if(showDebug) {
+    if(gDebug) {
       DEBUG_PORT.println("CAN1 to CAN3");
     }
     //msg1.buf[6]=0xff;
     //byte sndStat = CANMCP3.sendMsgBuf(msg1.id,0,msg1.len,msg1.buf);
-    byte sndStat = sendTX0(msg1.id,msg1.len,msg1.buf);
+    byte sndStat = sendTX0(msg1.id,msg1.len,msg1.buf,1);
     if((millis1>20000)&(millis1<21001)&(proofDebug)&(sndStat==CAN_OK)) {
       cnt31++;
     }
@@ -371,7 +371,7 @@ void canSniff1(const CAN_message_t &msg1) {
 //**************************************************
 
 void canSniff2(const CAN_message_t &msg2) {
-  if (showDebug) DEBUG_PORT.println("RX CAN2");
+  if (gDebug) DEBUG_PORT.println("RX CAN2");
   switch (msg2.id) {
     case turnSignalIndicatorMSG:  //0x08d (BD_TO_CS)
       // 1
@@ -461,12 +461,12 @@ void canSniff2(const CAN_message_t &msg2) {
     cnt2++;
   }
   if (firewallOpen2) {
-    if(showDebug) {
+    if(gDebug) {
       DEBUG_PORT.println("CAN2 to CAN3");
     }
     //msg2.buf[7]=0xff;
     //byte sndStat = CANMCP3.sendMsgBuf(msg2.id,0,msg2.len,msg2.buf);
-    byte sndStat = sendTX0(msg2.id,msg2.len,msg2.buf);
+    byte sndStat = sendTX0(msg2.id,msg2.len,msg2.buf,1);
     if((millis2>20000)&(millis2<21001)&(proofDebug)&(sndStat==CAN_OK)) {
       cnt32++;
     }
@@ -555,7 +555,7 @@ static void serialMenu() {
         SCB_AIRCR = 0x05FA0004;
         break;
       case 'd':     // toggle DEBUG
-        showDebug=!showDebug;
+        gDebug=!gDebug;
         break;
       case 'h':     // help
         DEBUG_PORT.println("f\tToggle firewall");

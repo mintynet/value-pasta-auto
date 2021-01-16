@@ -329,33 +329,41 @@ void checkNext() {
   {
     next_resp[next_index] = 0;
   }
-  if (NEXTION_PORT.available())
+  if (NEXTION_PORT.available()>0)
   {
+    if(gDebug) DEBUG_PORT.println("NEXT DATA");
     for (next_index = 0;next_index < 16; next_index++)
     {
       next_resp[next_index] = NEXTION_PORT.read();
-      //if (next_resp[next_index] < 16) DEBUG_PORT.print("0");
-      //DEBUG_PORT.print(next_resp[next_index],HEX);
+      if(gDebug) {
+        if (next_resp[next_index] < 16) DEBUG_PORT.print("0");
+        DEBUG_PORT.print(next_resp[next_index],HEX);
+      }
+      delayMicroseconds(50);
     }
-    //DEBUG_PORT.println();
+    if(gDebug) DEBUG_PORT.println();
   } else {
     return;
   }
   if((next_resp[0]==0x66) && (next_resp[1]==0x0)) 
   {
     nextPage=0;
+    if(gDebug) DEBUG_PORT.println("CHANGE PAGE 0");
   } else if((next_resp[0]==0x66) && (next_resp[1]==0x1)) 
   {
     nextPage=1;
     dispBody();
+    if(gDebug) DEBUG_PORT.println("CHANGE PAGE 1");
   } else if((next_resp[0]==0x65) && (next_resp[1]==0x1) && (next_resp[2]==0x25)) 
   {
     // BONNET
     ecu_data.bonnetOpenSwitchRAW = !ecu_data.bonnetOpenSwitchRAW;
+    if(gDebug) DEBUG_PORT.println("BONNET");
   } else if((next_resp[0]==0x65) && (next_resp[1]==0x1) && (next_resp[2]==0x26)) 
   {
     // BOOT
     ecu_data.trunkOpenSwitchRAW = !ecu_data.trunkOpenSwitchRAW;
+    if(gDebug) DEBUG_PORT.println("BOOT");
   } else if((next_resp[0]==0x65) && (next_resp[1]==0x1) && (next_resp[2]==0x27)) 
   {
     // LDOOR
@@ -364,6 +372,7 @@ void checkNext() {
     if ((ecu_data.doorLockStatusRAW & 0x01) >> 0) {
       ecu_data.doorLockStatusRAW = ecu_data.doorLockStatusRAW - 1;
     }
+    if(gDebug) DEBUG_PORT.println("LDOOR");
   } else if((next_resp[0]==0x65) && (next_resp[1]==0x1) && (next_resp[2]==0x28)) 
   {
     // RDOOR
@@ -372,6 +381,7 @@ void checkNext() {
     if ((ecu_data.doorLockStatusRAW & 0x02) >> 1) {
       ecu_data.doorLockStatusRAW = ecu_data.doorLockStatusRAW - 2;
     }
+    if(gDebug) DEBUG_PORT.println("RDOOR");
   } else if (next_resp[0]<=20) {
       ecu_data.lDoorLimitRAW = next_resp[0]*5;
   } else if (next_resp[0]<=40) {
