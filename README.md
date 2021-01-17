@@ -6,7 +6,7 @@ I have created a lower cost approximation of the Toyota PASTA:Portable Automotiv
 There are four ECU's in #value-pasta-auto
 |ECU|CAN0(500kbps)|CAN1(500kbps)|CAN2(500kbps)|CAN3(500kbps)|Software Status|
 |:---:|:---:|:---:|:---:|:---:|:---:|
-| - | Internal CAN0 2.0 | Internal CAN1 2.0 | Internal CAN2 2.0 (can be CAN-FD) | MCP2515 CAN 2.0 ||
+| - | Internal CAN0 2.0 | Internal CAN1 2.0 | Internal CAN2 2.0<br>(can be CAN-FD) | MCP2515 CAN 2.0 ||
 | Gateway ECU | Powertrain ECU CAN0 | Chassis ECU CAN0 | Body ECU CAN0 | OBD2 port | Gateway function complete/access from OBD2 using static ID/data |
 | Powertrain ECU | Gateway CAN0 | unused | unused | unused | UDS to be done |
 | Chassis ECU | Gateway CAN0 | unused | unused | unused | UDS to be done |
