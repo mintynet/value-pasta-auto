@@ -18,21 +18,22 @@ The Gateway ECU currently blocks traffic from the other BUSES to the OBD2 port u
 The micro controller hardware used in #value-pasta-auto for the ECU's is the [Teensy 4.0](https://www.pjrc.com/store/teensy40.html), which has 3 internal CAN controllers, one of which can be used for CAN-FD. The fourth CAN controller is provided by a MCP2515 controller. The CAN2.0 transceivers used are SN65HVD230DR and the CAN-FD transceiver is a MCP2562FD.
 
 ## Teensy ECU Schematic
-![Teensy ECU schematic](/Hardware/teensy-ecu%20schematic.png)
+![Teensy ECU schematic](/Hardware/teensy-ecu%20schematic%20v1.2.png)
 ## Teensy ECU PCB Front
-![Teensy ECU pcb front](/Hardware/teensy-ecu.png)
-<br>[Original GERBER v1.0](/Hardware/teensy-ecu%20GERBER%20files.zip) has a fault with the WS2818b pinout current software just uses a single SMD LED and resistor instead.
+![Teensy ECU pcb front](/Hardware/teensy-ecu%20v1.2.png)
+<br>[Original GERBER v1.0](/Hardware/teensy-ecu%20GERBER%20files%20v1.0.zip) has a fault with the WS2818b pinout current software just uses a single SMD LED and resistor instead.
 <br>[Updated GERBER v1.1](/Hardware/teensy-ECU%20GERBER%20files%20v1.1.zip) fixes the WS2818b pinout. Code would need modifying to support WS2812b.
+<br>[Updated GERBER v1.2](/Hardware/teensy-ECU%20GERBER%20files%20v1.2.zip) Adds the TXnBuff
 ## Todo Bill of materials
 
 ## I/O board
 The I/O board is used for the Powertrain and the Chassis ECU's. These are built using MCP23017 I/O expander, Powertrain ECU uses one MCP23017 and the Chassis ECU uses two MCP23017.
 
 ## I/O Board Schematic
-![I/O Board schematic](/Hardware/io-board%20schematic.png)
+![I/O Board schematic](/Hardware/io-board%20schematic%20v1.0.png)
 ## I/O Board PCB Front
-![I/O Board pcb front](/Hardware/io-board.png)
-<br>[Original GERBER v1.0](/Hardware/io-board%20GERBER%20files.zip) has a fault with the WS2818b pinout current software just uses a single SMD LED instead.
+![I/O Board pcb front](/Hardware/io-board%20v1.0.png)
+<br>[Original GERBER v1.0](/Hardware/io-board%20GERBER%20files%20v1.0.zip) has a fault with the WS2818b pinout current software just uses a single SMD LED instead.
 ## Todo Bill of materials
 
 * Chassis ECU I/O board
@@ -46,8 +47,8 @@ MCP23017 I/O Inputs unless otherwise stated
 | Shift Position switch DOWN | 4 | TURN switch L | | Right DOOR lock switch | 4 | N/A |
 | Shift Position switch UP | 5 | TURN switch R | | N/A | 5 | N/A |
 | Rear Wiper switch SLOW | 6 | HAZARD switch | | N/A | 6 | N/A |
-| Rear Wiper switch FAST | 7 | Start BUTTON | | N/A | 7 | Hazard OUTPUT |
-| HORN switch | 8 | Parking Brake switch | | HORN OUTPUT | 8 | Parking Brake OUTPUT |
+| Rear Wiper switch FAST | 7 | Start BUTTON | | N/A | 7 | Ignition OUTPUT |
+| HORN switch | 8 | Parking Brake switch | | N/A | 8 | Parking Brake OUTPUT |
 
 |Analogue Port|Value|
 |:---:|:---:|
