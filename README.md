@@ -21,7 +21,7 @@ The micro controller hardware used in #value-pasta-auto for the ECU's is the [Te
 ![Teensy ECU schematic](/Hardware/teensy-ecu%20schematic%20v1.2.png)
 ## Teensy ECU PCB Front
 ![Teensy ECU pcb front](/Hardware/teensy-ecu%20v1.2.png)
-<br>[Original GERBER v1.0](/Hardware/teensy-ecu%20GERBER%20files%20v1.0.zip) has a fault with the WS2818b pinout current software just uses a single SMD LED and resistor instead.
+<br>[Original GERBER v1.0](/Hardware/teensy-ECU%20GERBER%20files%20v1.0.zip) has a fault with the WS2818b pinout current software just uses a single SMD LED and resistor instead.
 <br>[Updated GERBER v1.1](/Hardware/teensy-ECU%20GERBER%20files%20v1.1.zip) fixes the WS2818b pinout. Code would need modifying to support WS2812b.
 <br>[Updated GERBER v1.2](/Hardware/teensy-ECU%20GERBER%20files%20v1.2.zip) Adds the TXnBuff
 ## Todo Bill of materials
