@@ -90,11 +90,12 @@ byte tx0RTS()
   digitalWrite(CAN0_CS, HIGH);
   //PORTB = PORTB | B00000100;
   SPI.endTransaction();
-  delayMicroseconds(250);
+  delayMicroseconds(120);
   byte res;
   byte idx = 0;
   do {
     idx++;
+    delayMicroseconds(20);
     res = readCANStatus();
     res = (res & 0x08)>>3;
   } while ((!res) && (idx<TIMEOUTVALUE));
