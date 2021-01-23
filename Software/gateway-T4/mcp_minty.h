@@ -33,7 +33,6 @@ void setupTX0Buf (unsigned long id, byte len, uint8_t *data, bool fastMode)
   SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
   // LOAD TX BUFFER 0
   digitalWrite(CAN0_CS, LOW);
-  //PORTB = PORTB & B11111011;
   SPI.transfer(MCP_LOAD_TX0);
   if ((0x80000000 & id)==0x80000000) {
     tbufdata[MCP_EID0] = (uint8_t) (canid & 0xFF);
@@ -56,7 +55,6 @@ void setupTX0Buf (unsigned long id, byte len, uint8_t *data, bool fastMode)
   for (int i=0;i<len;i++) {
     SPI.transfer(data[i]);
   }
-  //PORTB = PORTB | B00000100;
   digitalWrite(CAN0_CS, HIGH);
   SPI.endTransaction();
   if (!fastMode) {
@@ -70,10 +68,8 @@ byte readCANStatus() // same as MCP_CAN::mcp2515_readStatus
   
   SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
   digitalWrite(CAN0_CS, LOW);
-  //PORTB = PORTB & B11111011;
   SPI.transfer(MCP_READ_STATUS);
   ret = SPI.transfer(0x00);
-  //PORTB = PORTB | B00000100;
   digitalWrite(CAN0_CS, HIGH);
   SPI.endTransaction();
 
@@ -85,10 +81,8 @@ byte tx0RTS()
   // READY TO SEND
   SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
   digitalWrite(CAN0_CS, LOW);
-  //PORTB = PORTB & B11111011;
   SPI.transfer(MCP_RTS_TX0);
   digitalWrite(CAN0_CS, HIGH);
-  //PORTB = PORTB | B00000100;
   SPI.endTransaction();
   delayMicroseconds(120);
   byte res;
@@ -100,7 +94,6 @@ byte tx0RTS()
     res = (res & 0x08)>>3;
   } while ((!res) && (idx<TIMEOUTVALUE));
   if (idx==TIMEOUTVALUE) {
-    //Serial.println("TIMEOUT");
     return CANSENDTIMEOUT;
   }
   return CAN_OK;
