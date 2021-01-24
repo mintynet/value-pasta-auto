@@ -7,7 +7,7 @@ FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> Can0;
 #define NEXTION_PORT  Serial5
 
 const byte ledDisp = 4;
-const boolean gDebug = false;
+const boolean gDebug = true;
 
 static CAN_message_t msg;
 

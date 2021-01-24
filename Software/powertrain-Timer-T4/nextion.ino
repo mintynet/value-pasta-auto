@@ -233,7 +233,7 @@ void checkNext() {
     {
       next_resp[next_index] = NEXTION_PORT.read();
       if(gDebug) {
-        if (next_resp[next_index] < 16) DEBUG_PORT.print("0");
+        if (next_resp[next_index] < 16) DEBUG_PORT.print(F("0"));
         DEBUG_PORT.print(next_resp[next_index],HEX);
       }
       delayMicroseconds(50);
@@ -245,12 +245,12 @@ void checkNext() {
   if((next_resp[0]==0x66) && (next_resp[1]==0x0)) 
   {
     nextPage=0;
-    if(gDebug) DEBUG_PORT.println("CHANGE PAGE 0");
+    if(gDebug) DEBUG_PORT.println(F("CHANGE PAGE 0"));
   } else if((next_resp[0]==0x66) && (next_resp[1]==0x1)) 
   {
     nextPage=1;
     dispPowertrain();
-    if(gDebug) DEBUG_PORT.println("CHANGE PAGE 1");
+    if(gDebug) DEBUG_PORT.println(F("CHANGE PAGE 1"));
   } 
 } //checkNext
 
@@ -263,19 +263,19 @@ void dispNext() {
     if ((ecu_data.steeringValueRAW != ecu_data_old.steeringValueRAW)|(ecu_data.brakeValueRAW != ecu_data_old.brakeValueRAW)|(ecu_data.acceleratorValueRAW != ecu_data_old.acceleratorValueRAW)|(ecu_data.shiftPositionRAW != ecu_data_old.shiftPositionRAW)|(ecu_data.parkingValueRAW!=ecu_data_old.parkingValueRAW)|(ecu_data.mcpA!=ecu_data_old.mcpA)|(potValue!=potValue_old)) {
       dispPowertrain();
       if (gDebug == true) {
-        DEBUG_PORT.println("STEER");
+        DEBUG_PORT.println(F("STEER"));
         DEBUG_PORT.println(ecu_data.steeringValueRAW,HEX);
         DEBUG_PORT.println(ecu_data_old.steeringValueRAW,HEX);
-        DEBUG_PORT.println("BRAKE");
+        DEBUG_PORT.println(F("BRAKE"));
         DEBUG_PORT.println(ecu_data.brakeValueRAW,HEX);
         DEBUG_PORT.println(ecu_data_old.brakeValueRAW,HEX);
-        DEBUG_PORT.println("ACCELERATOR");
+        DEBUG_PORT.println(F("ACCELERATOR"));
         DEBUG_PORT.println(ecu_data.acceleratorValueRAW,HEX);
         DEBUG_PORT.println(ecu_data_old.acceleratorValueRAW,HEX);
-        DEBUG_PORT.println("SHIFT");
+        DEBUG_PORT.println(F("SHIFT"));
         DEBUG_PORT.println(ecu_data.shiftPositionRAW,HEX);
         DEBUG_PORT.println(ecu_data_old.shiftPositionRAW,HEX);
-        DEBUG_PORT.println("PARKING");
+        DEBUG_PORT.println(F("PARKING"));
         DEBUG_PORT.println(ecu_data.parkingValueRAW,HEX);
         DEBUG_PORT.println(ecu_data_old.parkingValueRAW,HEX);
         DEBUG_PORT.println(millis());

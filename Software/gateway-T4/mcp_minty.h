@@ -30,7 +30,7 @@ void setupTX0Buf (unsigned long id, byte len, uint8_t *data, bool fastMode)
   uint8_t tbufdata[4];
   canid = (uint16_t)(id & 0x0FFFF);
   
-  SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
+  SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
   // LOAD TX BUFFER 0
   digitalWrite(CAN0_CS, LOW);
   SPI.transfer(MCP_LOAD_TX0);
@@ -66,7 +66,7 @@ byte readCANStatus() // same as MCP_CAN::mcp2515_readStatus
 {
   byte ret;
   
-  SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
+  SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
   digitalWrite(CAN0_CS, LOW);
   SPI.transfer(MCP_READ_STATUS);
   ret = SPI.transfer(0x00);
@@ -79,7 +79,7 @@ byte readCANStatus() // same as MCP_CAN::mcp2515_readStatus
 byte tx0RTS()
 {
   // READY TO SEND
-  SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
+  SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
   digitalWrite(CAN0_CS, LOW);
   SPI.transfer(MCP_RTS_TX0);
   digitalWrite(CAN0_CS, HIGH);

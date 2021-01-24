@@ -331,12 +331,12 @@ void checkNext() {
   }
   if (NEXTION_PORT.available()>0)
   {
-    if(gDebug) DEBUG_PORT.println("NEXT DATA");
+    if(gDebug) DEBUG_PORT.println(F("NEXT DATA"));
     for (next_index = 0;next_index < 16; next_index++)
     {
       next_resp[next_index] = NEXTION_PORT.read();
       if(gDebug) {
-        if (next_resp[next_index] < 16) DEBUG_PORT.print("0");
+        if (next_resp[next_index] < 16) DEBUG_PORT.print(F("0"));
         DEBUG_PORT.print(next_resp[next_index],HEX);
       }
       delayMicroseconds(50);
@@ -348,22 +348,22 @@ void checkNext() {
   if((next_resp[0]==0x66) && (next_resp[1]==0x0)) 
   {
     nextPage=0;
-    if(gDebug) DEBUG_PORT.println("CHANGE PAGE 0");
+    if(gDebug) DEBUG_PORT.println(F("CHANGE PAGE 0"));
   } else if((next_resp[0]==0x66) && (next_resp[1]==0x1)) 
   {
     nextPage=1;
     dispBody();
-    if(gDebug) DEBUG_PORT.println("CHANGE PAGE 1");
+    if(gDebug) DEBUG_PORT.println(F("CHANGE PAGE 1"));
   } else if((next_resp[0]==0x65) && (next_resp[1]==0x1) && (next_resp[2]==0x25)) 
   {
     // BONNET
     ecu_data.bonnetOpenSwitchRAW = !ecu_data.bonnetOpenSwitchRAW;
-    if(gDebug) DEBUG_PORT.println("BONNET");
+    if(gDebug) DEBUG_PORT.println(F("BONNET"));
   } else if((next_resp[0]==0x65) && (next_resp[1]==0x1) && (next_resp[2]==0x26)) 
   {
     // BOOT
     ecu_data.trunkOpenSwitchRAW = !ecu_data.trunkOpenSwitchRAW;
-    if(gDebug) DEBUG_PORT.println("BOOT");
+    if(gDebug) DEBUG_PORT.println(F("BOOT"));
   } else if((next_resp[0]==0x65) && (next_resp[1]==0x1) && (next_resp[2]==0x27)) 
   {
     // LDOOR
@@ -372,7 +372,7 @@ void checkNext() {
     if ((ecu_data.doorLockStatusRAW & 0x01) >> 0) {
       ecu_data.doorLockStatusRAW = ecu_data.doorLockStatusRAW - 1;
     }
-    if(gDebug) DEBUG_PORT.println("LDOOR");
+    if(gDebug) DEBUG_PORT.println(F("LDOOR"));
   } else if((next_resp[0]==0x65) && (next_resp[1]==0x1) && (next_resp[2]==0x28)) 
   {
     // RDOOR
@@ -381,7 +381,7 @@ void checkNext() {
     if ((ecu_data.doorLockStatusRAW & 0x02) >> 1) {
       ecu_data.doorLockStatusRAW = ecu_data.doorLockStatusRAW - 2;
     }
-    if(gDebug) DEBUG_PORT.println("RDOOR");
+    if(gDebug) DEBUG_PORT.println(F("RDOOR"));
   } else if (next_resp[0]<=20) {
       ecu_data.lDoorLimitRAW = next_resp[0]*5;
   } else if (next_resp[0]<=40) {
@@ -404,24 +404,24 @@ void dispNext() {
         (ecu_data.doorLockStatusRAW!=ecu_data_old.doorLockStatusRAW)|
         (ecu_data.brakeValueRAW!=ecu_data_old.brakeValueRAW)) {
       dispBody();
-      /*if (gDebug == true) {
-        DEBUG_PORT.println("STEER");
+      if (gDebug == true) {
+        DEBUG_PORT.println(F("STEER"));
         DEBUG_PORT.println(ecu_data.steeringValueRAW,HEX);
         DEBUG_PORT.println(ecu_data_old.steeringValueRAW,HEX);
-        DEBUG_PORT.println("BRAKE");
+        DEBUG_PORT.println(F("BRAKE"));
         DEBUG_PORT.println(ecu_data.brakeValueRAW,HEX);
         DEBUG_PORT.println(ecu_data_old.brakeValueRAW,HEX);
-        DEBUG_PORT.println("ACCELERATOR");
+        DEBUG_PORT.println(F("ACCELERATOR"));
         DEBUG_PORT.println(ecu_data.acceleratorValueRAW,HEX);
         DEBUG_PORT.println(ecu_data_old.acceleratorValueRAW,HEX);
-        DEBUG_PORT.println("SHIFT");
+        DEBUG_PORT.println(F("SHIFT"));
         DEBUG_PORT.println(ecu_data.shiftPositionRAW,HEX);
         DEBUG_PORT.println(ecu_data_old.shiftPositionRAW,HEX);
-        DEBUG_PORT.println("PARKING");
+        DEBUG_PORT.println(F("PARKING"));
         DEBUG_PORT.println(ecu_data.parkingValueRAW,HEX);
         DEBUG_PORT.println(ecu_data_old.parkingValueRAW,HEX);
         DEBUG_PORT.println(millis());
-      }*/
+      }
     }
   }
 } //dispNext()

@@ -3,7 +3,7 @@
 #include "mcp_minty.h"
 #include "mcp_can.h"                              // version 1.5 25/09/17 from https://github.com/coryjfowler/MCP_CAN_lib modified for 10MHz SPI
 #include <SPI.h>                                  // version 1.0
-boolean       gDebug            = false;
+boolean       gDebug            = true;
 boolean       proofDebug        = true;
 boolean       firewallOpen0     = false;
 boolean       firewallOpen1     = false;
@@ -117,7 +117,7 @@ const unsigned int resetMSG                 = 0x280;
 //**************************************************
 
 void canSniff0(const CAN_message_t &msg0) {
-  if (gDebug) DEBUG_PORT.println("RX CAN0");
+  if (gDebug) DEBUG_PORT.println(F("RX CAN0"));
   switch (msg0.id) {
     case brakeOutputIndMSG:       //0x024 (PT_TO_CS)
       // 1
@@ -232,7 +232,7 @@ void canSniff0(const CAN_message_t &msg0) {
   }
   if (firewallOpen0) {
     if(gDebug) {
-      DEBUG_PORT.println("CAN0 to CAN3");
+      DEBUG_PORT.println(F("CAN0 to CAN3"));
     }
     //msg0.buf[5]=0xff;
     //byte sndStat = CANMCP3.sendMsgBuf(msg0.id,0,msg0.len,msg0.buf);
@@ -260,7 +260,7 @@ void canSniff0(const CAN_message_t &msg0) {
 //**************************************************
 
 void canSniff1(const CAN_message_t &msg1) {
-  if (gDebug) DEBUG_PORT.println("RX CAN1");
+  if (gDebug) DEBUG_PORT.println(F("RX CAN1"));
   switch (msg1.id) {
     case brakeOperationMSG:       //0x01a (CS_TO_AL) == CS to PT & BD
       // 0
@@ -343,7 +343,7 @@ void canSniff1(const CAN_message_t &msg1) {
   }
   if (firewallOpen1) {
     if(gDebug) {
-      DEBUG_PORT.println("CAN1 to CAN3");
+      DEBUG_PORT.println(F("CAN1 to CAN3"));
     }
     //msg1.buf[6]=0xff;
     //byte sndStat = CANMCP3.sendMsgBuf(msg1.id,0,msg1.len,msg1.buf);
@@ -371,7 +371,7 @@ void canSniff1(const CAN_message_t &msg1) {
 //**************************************************
 
 void canSniff2(const CAN_message_t &msg2) {
-  if (gDebug) DEBUG_PORT.println("RX CAN2");
+  if (gDebug) DEBUG_PORT.println(F("RX CAN2"));
   switch (msg2.id) {
     case turnSignalIndicatorMSG:  //0x08d (BD_TO_CS)
       // 1
@@ -462,7 +462,7 @@ void canSniff2(const CAN_message_t &msg2) {
   }
   if (firewallOpen2) {
     if(gDebug) {
-      DEBUG_PORT.println("CAN2 to CAN3");
+      DEBUG_PORT.println(F("CAN2 to CAN3"));
     }
     //msg2.buf[7]=0xff;
     //byte sndStat = CANMCP3.sendMsgBuf(msg2.id,0,msg2.len,msg2.buf);
@@ -558,16 +558,31 @@ static void serialMenu() {
         gDebug=!gDebug;
         break;
       case 'h':     // help
-        DEBUG_PORT.println("f\tToggle firewall");
-        DEBUG_PORT.println("1\tReboot Body ECU");
-        DEBUG_PORT.println("2\tReboot Chassis ECU");
-        DEBUG_PORT.println("4\tReboot Powertrain ECU");
-        DEBUG_PORT.println("8\tReboot Gateway ECU");
+        DEBUG_PORT.println(F("f\tToggle firewall"));
+        DEBUG_PORT.println(F("1\tReboot Body ECU"));
+        DEBUG_PORT.println(F("2\tReboot Chassis ECU"));
+        DEBUG_PORT.println(F("4\tReboot Powertrain ECU"));
+        DEBUG_PORT.println(F("8\tReboot Gateway ECU"));
         break;
       case 'f':     // firewall toggle
         firewallOpen0 = !firewallOpen0;
         firewallOpen1 = !firewallOpen1;
         firewallOpen2 = !firewallOpen2;
+        if (firewallOpen0) {
+          DEBUG_PORT.println(F("Firewall 0 Open"));
+        } else {
+          DEBUG_PORT.println(F("Firewall 0 Closed"));
+        }
+        if (firewallOpen1) {
+          DEBUG_PORT.println(F("Firewall 1 Open"));
+        } else {
+          DEBUG_PORT.println(F("Firewall 1 Closed"));
+        }
+        if (firewallOpen2) {
+          DEBUG_PORT.println(F("Firewall 2 Open"));
+        } else {
+          DEBUG_PORT.println(F("Firewall 2 Closed"));
+        }
         break;
       default:
         break;
@@ -610,16 +625,16 @@ void setup() {
 
   pinMode(CAN3_INT, INPUT);                     // Configuring pin for /INT input
   if(CANMCP3.begin(MCP_ANY, CAN3_SPEED, MCP_8MHZ) == CAN_OK){
-    DEBUG_PORT.print("CAN3:\t");
+    DEBUG_PORT.print(F("CAN3:\t"));
     if (CAN3_SPEED == 12) {
-      DEBUG_PORT.print("500kbps");
+      DEBUG_PORT.print(F("500kbps"));
     } else if (CAN3_SPEED == 9) {
-      DEBUG_PORT.print("125kbps");
+      DEBUG_PORT.print(F("125kbps"));
     }
-    DEBUG_PORT.print("\tInit OK!\r\n");
+    DEBUG_PORT.print(F("\tInit OK!\r\n"));
     CANMCP3.setMode(MCP_NORMAL);
   } else {
-    DEBUG_PORT.print("CAN3: Init Fail!!!\r\n");
+    DEBUG_PORT.print(F("CAN3: Init Fail!!!\r\n"));
   }
   while (millis()<10000) {
     // do nothing
@@ -635,19 +650,19 @@ void setup() {
 void loop() {
   serialMenu();
   if ((millis()>21000)&(millis()<21005)&(proofDebug)) {
-    DEBUG_PORT.print("CAN0:");
+    DEBUG_PORT.print(F("CAN0:"));
     DEBUG_PORT.print(cnt0);
-    DEBUG_PORT.print(" CAN1:");
+    DEBUG_PORT.print(F(" CAN1:"));
     DEBUG_PORT.print(cnt1);
-    DEBUG_PORT.print(" CAN2:");
+    DEBUG_PORT.print(F(" CAN2:"));
     DEBUG_PORT.print(cnt2);
-    DEBUG_PORT.print(" CAN3:0:");
+    DEBUG_PORT.print(F(" CAN3:0:"));
     DEBUG_PORT.print(cnt30);
-    DEBUG_PORT.print(" 1:");
+    DEBUG_PORT.print(F(" 1:"));
     DEBUG_PORT.print(cnt31);
-    DEBUG_PORT.print(" 2:");
+    DEBUG_PORT.print(F(" 2:"));
     DEBUG_PORT.print(cnt32);
-    DEBUG_PORT.print(" Total:");
+    DEBUG_PORT.print(F(" Total:"));
     DEBUG_PORT.println(cnt30+cnt31+cnt32);
     //while(true){
       //
@@ -660,15 +675,15 @@ void loop() {
         if((rxBuf[1] == unlockBuf[1])&(rxBuf[2] == unlockBuf[2])&(rxBuf[3] == unlockBuf[3])&(rxBuf[4] == unlockBuf[4])&(rxBuf[5] == unlockBuf[5])&(rxBuf[6] == unlockBuf[6])&(rxBuf[7] == unlockBuf[7])) {
           if((rxBuf[0]&0x01)>>0) {
             firewallOpen0 = true;
-            DEBUG_PORT.println("Firewall0 unlock");         
+            DEBUG_PORT.println(F("Firewall0 unlock"));
           }
           if((rxBuf[0]&0x02)>>1) {
             firewallOpen1 = true;
-            DEBUG_PORT.println("Firewall1 unlock");         
+            DEBUG_PORT.println(F("Firewall1 unlock"));
           }
           if((rxBuf[0]&0x04)>>2) {
             firewallOpen2 = true;
-            DEBUG_PORT.println("Firewall2 unlock");         
+            DEBUG_PORT.println(F("Firewall2 unlock"));
           }
         }
         break;
@@ -676,15 +691,15 @@ void loop() {
         if((rxBuf[1] == unlockBuf[1])&(rxBuf[2] == unlockBuf[2])&(rxBuf[3] == unlockBuf[3])&(rxBuf[4] == unlockBuf[4])&(rxBuf[5] == unlockBuf[5])&(rxBuf[6] == unlockBuf[6])&(rxBuf[7] == unlockBuf[7])) {
           if((rxBuf[0]&0x01)>>0) {
             firewallOpen0 = false;
-            DEBUG_PORT.println("Firewall0 lock");         
+            DEBUG_PORT.println(F("Firewall0 lock"));         
           }
           if((rxBuf[0]&0x02)>>1) {
             firewallOpen1 = false;
-            DEBUG_PORT.println("Firewall1 lock");         
+            DEBUG_PORT.println(F("Firewall1 lock"));         
           }
           if((rxBuf[0]&0x04)>>2) {
             firewallOpen2 = false;
-            DEBUG_PORT.println("Firewall2 lock");         
+            DEBUG_PORT.println(F("Firewall2 lock"));         
           }
         }
         break;

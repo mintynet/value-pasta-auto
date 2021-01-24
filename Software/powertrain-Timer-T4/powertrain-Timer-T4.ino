@@ -460,27 +460,27 @@ void btSend() {
     if (ecu_data.brakeValueRAW > 0x20) {
       lightNum = lightNum + 1;
     }
-    BT_CAR_PORT.print("C#4#");
+    BT_CAR_PORT.print(F("C#4#"));
     BT_CAR_PORT.print(lightNum);
-    BT_CAR_PORT.print("#");
-    DEBUG_PORT.print("C#4#");
+    BT_CAR_PORT.print(F("#"));
+    DEBUG_PORT.print(F("C#4#"));
     DEBUG_PORT.print(lightNum);
-    DEBUG_PORT.print("#");
+    DEBUG_PORT.print(F("#"));
     if ((ecu_data.turnSwitchValueRAW & 0x04) >> 2) {
-      BT_CAR_PORT.print("3");
-      DEBUG_PORT.print("3");
+      BT_CAR_PORT.print(F("3"));
+      DEBUG_PORT.print(F("3"));
     } else {
       BT_CAR_PORT.print(ecu_data.turnSwitchValueRAW);
       DEBUG_PORT.print(ecu_data.turnSwitchValueRAW);
     }
-    BT_CAR_PORT.println("#0#");
-    DEBUG_PORT.println("#0#");
+    BT_CAR_PORT.println(F("#0#"));
+    DEBUG_PORT.println(F("#0#"));
   }
   if (ecu_data.hornValueRAW!=ecu_data_old.hornValueRAW) {
     if (ecu_data.hornValueRAW) {
-      BT_CAR_PORT.println("D#2000#");
+      BT_CAR_PORT.println(F("D#2000#"));
     } else {
-      BT_CAR_PORT.println("D#0#");
+      BT_CAR_PORT.println(F("D#0#"));
     }
   }
   if (ecu_data.engineStatusRAW){
@@ -516,22 +516,22 @@ void btSend() {
           //rightWheel = rightWheel/2;
           rightWheel = 0;
         }
-        DEBUG_PORT.print("Steering ");
+        DEBUG_PORT.print(F("Steering "));
         DEBUG_PORT.println(tempSteering);
-        DEBUG_PORT.print("leftWheel  ");
+        DEBUG_PORT.print(F("leftWheel  "));
         DEBUG_PORT.println(leftWheel);
-        DEBUG_PORT.print("rightWheel ");
+        DEBUG_PORT.print(F("rightWheel "));
         DEBUG_PORT.println(rightWheel);
-        BT_CAR_PORT.print("A#");
+        BT_CAR_PORT.print(F("A#"));
         BT_CAR_PORT.print(leftWheel);
-        BT_CAR_PORT.print("#");
+        BT_CAR_PORT.print(F("#"));
         BT_CAR_PORT.print(rightWheel);
-        BT_CAR_PORT.println("#");
-        DEBUG_PORT.print("A#");
+        BT_CAR_PORT.println(F("#"));
+        DEBUG_PORT.print(F("A#"));
         DEBUG_PORT.print(leftWheel);
-        DEBUG_PORT.print("#");
+        DEBUG_PORT.print(F("#"));
         DEBUG_PORT.print(rightWheel);
-        DEBUG_PORT.println("#");
+        DEBUG_PORT.println(F("#"));
       } else if ((dialCount == 7)&(ecu_data.shiftPositionRAW == 4)) {
         // DRIVE GEAR
         leftWheel = (ecu_data.acceleratorValueRAW * 255 / 1024) - (ecu_data.brakeValueRAW * 255 / 1024) - (ecu_data.parkingValueRAW * 255 / 1);
@@ -555,22 +555,22 @@ void btSend() {
           //rightWheel = rightWheel/2;
           rightWheel = 0;
         }
-        DEBUG_PORT.print("Steering ");
+        DEBUG_PORT.print(F("Steering "));
         DEBUG_PORT.println(tempSteering);
-        DEBUG_PORT.print("leftWheel  ");
+        DEBUG_PORT.print(F("leftWheel  "));
         DEBUG_PORT.println(leftWheel);
-        DEBUG_PORT.print("rightWheel ");
+        DEBUG_PORT.print(F("rightWheel "));
         DEBUG_PORT.println(rightWheel);
-        BT_CAR_PORT.print("A#");
+        BT_CAR_PORT.print(F("A#"));
         BT_CAR_PORT.print(leftWheel);
-        BT_CAR_PORT.print("#");
+        BT_CAR_PORT.print(F("#"));
         BT_CAR_PORT.print(rightWheel);
-        BT_CAR_PORT.println("#");
-        DEBUG_PORT.print("A#");
+        BT_CAR_PORT.println(F("#"));
+        DEBUG_PORT.print(F("A#"));
         DEBUG_PORT.print(leftWheel);
-        DEBUG_PORT.print("#");
+        DEBUG_PORT.print(F("#"));
         DEBUG_PORT.print(rightWheel);
-        DEBUG_PORT.println("#");
+        DEBUG_PORT.println(F("#"));
       } else if ((dialCount == 7)&(ecu_data.shiftPositionRAW == 2)) {
         // REVERSE GEAR
         leftWheel = (ecu_data.acceleratorValueRAW * 127 / 1024) - (ecu_data.brakeValueRAW * 127 / 1024) - (ecu_data.parkingValueRAW * 127 / 1);
@@ -596,25 +596,25 @@ void btSend() {
         }
         leftWheel = -leftWheel;
         rightWheel = -rightWheel;
-        DEBUG_PORT.print("Steering ");
+        DEBUG_PORT.print(F("Steering "));
         DEBUG_PORT.println(tempSteering);
-        DEBUG_PORT.print("leftWheel  ");
+        DEBUG_PORT.print(F("leftWheel  "));
         DEBUG_PORT.println(leftWheel);
-        DEBUG_PORT.print("rightWheel ");
+        DEBUG_PORT.print(F("rightWheel "));
         DEBUG_PORT.println(rightWheel);
-        BT_CAR_PORT.print("A#");
+        BT_CAR_PORT.print(F("A#"));
         BT_CAR_PORT.print(leftWheel);
-        BT_CAR_PORT.print("#");
+        BT_CAR_PORT.print(F("#"));
         BT_CAR_PORT.print(rightWheel);
-        BT_CAR_PORT.println("#");
-        DEBUG_PORT.print("A#");
+        BT_CAR_PORT.println(F("#"));
+        DEBUG_PORT.print(F("A#"));
         DEBUG_PORT.print(leftWheel);
-        DEBUG_PORT.print("#");
+        DEBUG_PORT.print(F("#"));
         DEBUG_PORT.print(rightWheel);
-        DEBUG_PORT.println("#");
+        DEBUG_PORT.println(F("#"));
       } else {
-        BT_CAR_PORT.println("A#0#0#");
-        DEBUG_PORT.println("A#0#0#");
+        BT_CAR_PORT.println(F("A#0#0#"));
+        DEBUG_PORT.println(F("A#0#0#"));
       }
     }
   }
@@ -666,8 +666,8 @@ void setup() {
     mcpA.pullUp(i,HIGH);
   }
   preDialBit0 = mcpA.digitalRead(0);
-  BT_CAR_PORT.println("A#0#0#");     //STOP WHEELS
-  BT_CAR_PORT.println("C#2#0#0#0#"); //TURN OFF LIGHTS
+  BT_CAR_PORT.println(F("A#0#0#"));     //STOP WHEELS
+  BT_CAR_PORT.println(F("C#2#0#0#0#")); //TURN OFF LIGHTS
   /*DEBUG_PORT.println(micros());
   can100Hz();
   DEBUG_PORT.println(micros());
@@ -753,8 +753,8 @@ void loop() {
           dialCount = 7;
         }
       } else {
-        BT_CAR_PORT.println("A#0#0#");
-        DEBUG_PORT.println("A#0#0#");
+        BT_CAR_PORT.println(F("A#0#0#"));
+        DEBUG_PORT.println(F("A#0#0#"));
         dialCount--;
         curDialDir = "CCW";
         if (dialCount < 0) {
@@ -789,36 +789,36 @@ void loop() {
     }
   
     if (gDebug) {
-      DEBUG_PORT.println("************************************************************");
-      DEBUG_PORT.print("mcpAValue            : ");
-      if (mcpAValue < 0x10) DEBUG_PORT.print("0");
-      if (mcpAValue < 0x100) DEBUG_PORT.print("0");
-      if (mcpAValue < 0x1000) DEBUG_PORT.print("0");
+      DEBUG_PORT.println(F("************************************************************"));
+      DEBUG_PORT.print(F("mcpAValue            : "));
+      if (mcpAValue < 0x10) DEBUG_PORT.print(F("0"));
+      if (mcpAValue < 0x100) DEBUG_PORT.print(F("0"));
+      if (mcpAValue < 0x1000) DEBUG_PORT.print(F("0"));
       DEBUG_PORT.println(mcpAValue,HEX);
-      DEBUG_PORT.println("************************************************************");
-      DEBUG_PORT.print("Dial button          : ");
+      DEBUG_PORT.println(F("************************************************************"));
+      DEBUG_PORT.print(F("Dial button          : "));
       DEBUG_PORT.println(dialButton);
-      DEBUG_PORT.print("Dial           Dir   : ");
+      DEBUG_PORT.print(F("Dial           Dir   : "));
       DEBUG_PORT.print(curDialDir);
-      DEBUG_PORT.print(" | counter: ");
+      DEBUG_PORT.print(F(" | counter: "));
       DEBUG_PORT.println(dialCount);
-      DEBUG_PORT.print("potValue             : ");
+      DEBUG_PORT.print(F("potValue             : "));
       DEBUG_PORT.println(potValue,HEX);
-      DEBUG_PORT.print("potValue_old         : ");
+      DEBUG_PORT.print(F("potValue_old         : "));
       DEBUG_PORT.println(potValue_old,HEX);
-      DEBUG_PORT.print("engineValueRAW       : ");
+      DEBUG_PORT.print(F("engineValueRAW       : "));
       DEBUG_PORT.println(ecu_data.engineValueRAW,HEX);
-      DEBUG_PORT.print("engineMalfunctionRAW : ");
+      DEBUG_PORT.print(F("engineMalfunctionRAW : "));
       DEBUG_PORT.println(ecu_data.engineMalfunctionRAW,HEX);
-      DEBUG_PORT.print("engineStatusRAW      : ");
+      DEBUG_PORT.print(F("engineStatusRAW      : "));
       DEBUG_PORT.println(ecu_data.engineStatusRAW,HEX);
-      DEBUG_PORT.print("speedKphRAW          : ");
+      DEBUG_PORT.print(F("speedKphRAW          : "));
       DEBUG_PORT.println(ecu_data.speedKphRAW,HEX);
-      DEBUG_PORT.print("engineRpmRAW         : ");
+      DEBUG_PORT.print(F("engineRpmRAW         : "));
       DEBUG_PORT.println(ecu_data.engineRpmRAW,HEX);
-      DEBUG_PORT.print("fuelAmountRAW        : ");
+      DEBUG_PORT.print(F("fuelAmountRAW        : "));
       DEBUG_PORT.println(ecu_data.fuelAmountRAW,HEX);
-      DEBUG_PORT.print("engineCoolantTempRAW : ");
+      DEBUG_PORT.print(F("engineCoolantTempRAW : "));
       DEBUG_PORT.println(ecu_data.engineCoolantTempRAW,HEX);
     }
   }

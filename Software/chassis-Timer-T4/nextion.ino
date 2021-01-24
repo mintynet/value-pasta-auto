@@ -244,7 +244,7 @@ void checkNext() {
     {
       next_resp[next_index] = NEXTION_PORT.read();
       if(gDebug) {
-        if (next_resp[next_index] < 16) DEBUG_PORT.print("0");
+        if (next_resp[next_index] < 16) DEBUG_PORT.print(F("0"));
         DEBUG_PORT.print(next_resp[next_index],HEX);
       }
       delayMicroseconds(50);
@@ -256,28 +256,28 @@ void checkNext() {
   if((next_resp[0]==0x66) && (next_resp[1]==0x0)) 
   {
     nextPage=0;
-    if(gDebug) DEBUG_PORT.println("CHANGE PAGE 0");
+    if(gDebug) DEBUG_PORT.println(F("CHANGE PAGE 0"));
   } else if((next_resp[0]==0x66) && (next_resp[1]==0x1)) 
   {
     nextPage=1;
     dispChassis(ecu_data.engineRpmRAW,abs(ecu_data.speedKphRAW*0.621371),ecu_data.engineCoolantTempRAW,ecu_data.fuelAmountRAW);
-    if(gDebug) DEBUG_PORT.println("CHANGE PAGE 1");
+    if(gDebug) DEBUG_PORT.println(F("CHANGE PAGE 1"));
   } else if((next_resp[0]==0x66) && (next_resp[1]==0x2))
   {
     nextPage=2;
     dispSpeed(ecu_data.speedKphRAW*0.621371);
-    if(gDebug) DEBUG_PORT.println("CHANGE PAGE 2");
+    if(gDebug) DEBUG_PORT.println(F("CHANGE PAGE 2"));
   } else if((next_resp[0]==0x66) && (next_resp[1]==0x3))
   {
     nextPage=3;
     dispRev(ecu_data.engineRpmRAW);
-    if(gDebug) DEBUG_PORT.println("CHANGE PAGE 3");
+    if(gDebug) DEBUG_PORT.println(F("CHANGE PAGE 3"));
   } else if((next_resp[0]==0x66) && (next_resp[1]==0x4))
   {
     nextPage=4;
     dispTps(ecu_data.throttlePositionRAW*100/1024);
     dispBrake(ecu_data.brakeOutputRAW*100/1024);
-    if(gDebug) DEBUG_PORT.println("CHANGE PAGE 4");
+    if(gDebug) DEBUG_PORT.println(F("CHANGE PAGE 4"));
   } 
 } //checkNext
 
