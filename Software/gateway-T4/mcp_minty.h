@@ -1,10 +1,15 @@
 #include <SPI.h>
 
-#define CAN0_CS 10
+#define CAN3_CS 10
+#define CAN3_TX0BUF         24                // TX0 RTS Pin
+#define CAN3_TX1BUF         25                // TX1 RTS Pin
+#define CAN3_TX2BUF         26                // TX2 RTS Pin
+#define CAN3_RX0BF          27                // RX0 INT Pin
+#define CAN3_RX1BF          28                // RX1 INT Pin
 
-#define TIMEOUTVALUE   50
-#define CAN_OK         (0)
-#define CANSENDTIMEOUT (200)
+#define TIMEOUTVALUE        50
+#define CAN_OK              (0)
+#define CANSENDTIMEOUT      (200)
 
 #define MCP_SIDH            0x0
 #define MCP_SIDL            0x1
@@ -24,6 +29,10 @@
 #define MCP_RTS_TX2         0x84
 #define MCP_RTS_ALL         0x87
 
+//**************************************************
+// setupTX0Buf()
+//**************************************************
+
 void setupTX0Buf (unsigned long id, byte len, uint8_t *data, bool fastMode)
 {
   uint16_t canid;
@@ -32,7 +41,7 @@ void setupTX0Buf (unsigned long id, byte len, uint8_t *data, bool fastMode)
   
   SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
   // LOAD TX BUFFER 0
-  digitalWrite(CAN0_CS, LOW);
+  digitalWrite(CAN3_CS, LOW);
   SPI.transfer(MCP_LOAD_TX0);
   if ((0x80000000 & id)==0x80000000) {
     tbufdata[MCP_EID0] = (uint8_t) (canid & 0xFF);
@@ -55,34 +64,42 @@ void setupTX0Buf (unsigned long id, byte len, uint8_t *data, bool fastMode)
   for (int i=0;i<len;i++) {
     SPI.transfer(data[i]);
   }
-  digitalWrite(CAN0_CS, HIGH);
+  digitalWrite(CAN3_CS, HIGH);
   SPI.endTransaction();
   if (!fastMode) {
     delayMicroseconds(150);
   }
-}
+} // setupTX0Buf()
+
+//**************************************************
+// readCANStatus()
+//**************************************************
 
 byte readCANStatus() // same as MCP_CAN::mcp2515_readStatus
 {
   byte ret;
   
   SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
-  digitalWrite(CAN0_CS, LOW);
+  digitalWrite(CAN3_CS, LOW);
   SPI.transfer(MCP_READ_STATUS);
   ret = SPI.transfer(0x00);
-  digitalWrite(CAN0_CS, HIGH);
+  digitalWrite(CAN3_CS, HIGH);
   SPI.endTransaction();
 
   return ret;
-}
+} // readCANStatus()
+
+//**************************************************
+// tx0RTS0()
+//**************************************************
 
 byte tx0RTS()
 {
   // READY TO SEND
   SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
-  digitalWrite(CAN0_CS, LOW);
+  digitalWrite(CAN3_CS, LOW);
   SPI.transfer(MCP_RTS_TX0);
-  digitalWrite(CAN0_CS, HIGH);
+  digitalWrite(CAN3_CS, HIGH);
   SPI.endTransaction();
   delayMicroseconds(120);
   byte res;
@@ -97,7 +114,11 @@ byte tx0RTS()
     return CANSENDTIMEOUT;
   }
   return CAN_OK;
-}
+} // tx0RTS()
+
+//**************************************************
+// sendTX0()
+//**************************************************
 
 byte sendTX0(unsigned long id, byte len, uint8_t *data, bool fastMode)
 {
@@ -105,99 +126,32 @@ byte sendTX0(unsigned long id, byte len, uint8_t *data, bool fastMode)
   setupTX0Buf(id,len,data,fastMode);
   res = tx0RTS();
   return res;
-}
+} // sendTX0()
 
-/*void sendStdTX1 (unsigned long id, byte len, uint8_t *data)
-{
-  SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
-  // LOAD TX BUFFER 0
-  digitalWrite(CAN0_CS, LOW);
-  SPI.transfer(MCP_LOAD_TX1);
-  SPI.transfer(id>>3);
-  SPI.transfer((id & 0x07 ) << 5);
-  SPI.transfer(0x0);
-  SPI.transfer(0x0);
-  SPI.transfer(len);
-  for (int i=0;i<len;i++) {
-    SPI.transfer(data[i]);
-  }
-  digitalWrite(CAN0_CS, HIGH);
-  SPI.endTransaction();
-  delayMicroseconds(250);
-}
+/*
+//**************************************************
+// txAllRTS()
+//**************************************************
 
-void sendStdTX2 (unsigned long id, byte len, uint8_t *data)
-{
-  SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
-  // LOAD TX BUFFER 0
-  digitalWrite(CAN0_CS, LOW);
-  SPI.transfer(MCP_LOAD_TX2);
-  SPI.transfer(id>>3);
-  SPI.transfer((id & 0x07 ) << 5);
-  SPI.transfer(0x0);
-  SPI.transfer(0x0);
-  SPI.transfer(len);
-  for (int i=0;i<len;i++) {
-    SPI.transfer(data[i]);
-  }
-  digitalWrite(CAN0_CS, HIGH);
-  SPI.endTransaction();
-  delayMicroseconds(250);
-}
-
-byte tx1RTS()
+byte txALLRTS()
 {
   SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
   // READY TO SEND
-  digitalWrite(CAN0_CS, LOW);
-  SPI.transfer(MCP_RTS_TX1);
-  digitalWrite(CAN0_CS, HIGH);
-  SPI.endTransaction();
-  delayMicroseconds(250);
-  byte res;
-  byte idx = 0;
-  do {
-    idx++;
-    res = readCANStatus();
-    res = (res & 0x20)>>5;
-  } while ((!res) && (idx<TIMEOUTVALUE));
-  if (idx==TIMEOUTVALUE) {
-    Serial.println("TIMEOUT");
-    return CANSENDTIMEOUT;
-  }
-  return CAN_OK;
-}
-
-byte tx2RTS()
-{
-  SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
-  // READY TO SEND
-  digitalWrite(CAN0_CS, LOW);
-  SPI.transfer(MCP_RTS_TX2);
-  digitalWrite(CAN0_CS, HIGH);
-  SPI.endTransaction();
-  delayMicroseconds(250);
-  byte res;
-  byte idx = 0;
-  do {
-    idx++;
-    res = readCANStatus();
-    res = (res & 0x80)>>7;
-  } while ((!res) && (idx<TIMEOUTVALUE));
-  if (idx==TIMEOUTVALUE) {
-    Serial.println("TIMEOUT");
-    return CANSENDTIMEOUT;
-  }
-  return CAN_OK;
-}
-
-void txALLRTS()
-{
-  SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
-  // READY TO SEND
-  digitalWrite(CAN0_CS, LOW);
+  digitalWrite(CAN3_CS, LOW);
   SPI.transfer(MCP_RTS_ALL);
-  digitalWrite(CAN0_CS, HIGH);
+  digitalWrite(CAN3_CS, HIGH);
   SPI.endTransaction();
-  delayMicroseconds(250);
-}*/
+  delayMicroseconds(120);
+  byte res;
+  byte idx = 0;
+  do {
+    idx++;
+    delayMicroseconds(20);
+    res = readCANStatus();
+    res = (res & 0x08)>>3;
+  } while ((!res) && (idx<TIMEOUTVALUE));
+  if (idx==TIMEOUTVALUE) {
+    return CANSENDTIMEOUT;
+  }
+  return CAN_OK;
+} // txAllRTS() */

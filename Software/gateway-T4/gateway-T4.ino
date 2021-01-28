@@ -3,7 +3,9 @@
 #include "mcp_minty.h"
 #include "mcp_can.h"                              // version 1.5 25/09/17 from https://github.com/coryjfowler/MCP_CAN_lib modified for 10MHz SPI
 #include <SPI.h>                                  // version 1.0
-boolean       gDebug            = true;
+#include <Adafruit_NeoPixel.h>                    // version 1.7.0
+#include <FlexCAN_T4.h>                           // version 2018
+boolean       gDebug            = false;
 boolean       proofDebug        = true;
 boolean       firewallOpen0     = false;
 boolean       firewallOpen1     = false;
@@ -16,19 +18,26 @@ byte unlockBuf[8]               = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07};
 long unsigned int   rxId;                         // Used for MCP3 received msgs
 unsigned char       len         = 0;              // Used for MCP3 received msgs
 unsigned char       rxBuf[8];                     // Used for MCP3 received msgs
+#define             MAX_PIXELS  1                 // Number of Neopixels
 #define             CAN3_INT    9                 // Set INT to pin 9
 #define             CAN3_CS     10                // Set INT to pin 10
 #define             CAN3_SPEED  CAN_500KBPS       // 500kbps
+/*
+#define             CAN3_TX0BUF 24                // TX0 RTS Pin
+#define             CAN3_TX1BUF 25                // TX1 RTS Pin
+#define             CAN3_TX2BUF 26                // TX2 RTS Pin
+#define             CAN3_RX0BF  27                // RX0 INT Pin
+#define             CAN3_RX1BF  28                // RX1 INT Pin
+*/
 MCP_CAN             CANMCP3(CAN3_CS);             // CAN3 interface using CS on digital pin 10
 
-int           cnt0 = 0;
-int           cnt1 = 0;
-int           cnt2 = 0;
-int           cnt30 = 0;
-int           cnt31 = 0;
-int           cnt32 = 0;
+unsigned int        cnt0  = 0;
+unsigned int        cnt1  = 0;
+unsigned int        cnt2  = 0;
+unsigned int        cnt30 = 0;
+unsigned int        cnt31 = 0;
+unsigned int        cnt32 = 0;
 
-#include <FlexCAN_T4.h>
 // 0 Powertrain
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> Can0;
 // 1 Chassis
@@ -38,7 +47,9 @@ FlexCAN_T4<CAN3, RX_SIZE_256, TX_SIZE_16> Can2;
 
 #define DEBUG_PORT    Serial
 
-const byte ledDisp = 4;
+const byte NEO_PIN = 4;
+
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(MAX_PIXELS, NEO_PIN, NEO_GRB + NEO_KHZ800);
 
 // 0 Powertrain
 int CANBUSSPEED0  = 500000;
@@ -241,7 +252,9 @@ void canSniff0(const CAN_message_t &msg0) {
       cnt30++;
     }
   }
-  digitalWrite(ledDisp,!digitalRead(ledDisp));
+  pixels.setPixelColor(0, pixels.Color(150,0,0));
+  pixels.show();
+  //digitalWrite(ledDisp,!digitalRead(ledDisp));
   //Serial.print("MB "); Serial.print(msg.mb);
   //Serial.print("  OVERRUN: "); Serial.print(msg.flags.overrun);
   //Serial.print("  LEN: "); Serial.print(msg.len);
@@ -352,7 +365,9 @@ void canSniff1(const CAN_message_t &msg1) {
       cnt31++;
     }
   }
-  digitalWrite(ledDisp,!digitalRead(ledDisp));
+  pixels.setPixelColor(0, pixels.Color(0,150,0));
+  pixels.show();
+  //digitalWrite(ledDisp,!digitalRead(ledDisp));
   //Serial.print("MB "); Serial.print(msg.mb);
   //Serial.print("  OVERRUN: "); Serial.print(msg.flags.overrun);
   //Serial.print("  LEN: "); Serial.print(msg.len);
@@ -471,7 +486,9 @@ void canSniff2(const CAN_message_t &msg2) {
       cnt32++;
     }
   }
-  digitalWrite(ledDisp,!digitalRead(ledDisp));
+  pixels.setPixelColor(0, pixels.Color(0,0,150));
+  pixels.show();
+  //digitalWrite(ledDisp,!digitalRead(ledDisp));
   //Serial.print("MB "); Serial.print(msg.mb);
   //Serial.print("  OVERRUN: "); Serial.print(msg.flags.overrun);
   //Serial.print("  LEN: "); Serial.print(msg.len);
@@ -595,6 +612,9 @@ static void serialMenu() {
 //**************************************************
 
 void setup() {
+  // Setup NEOPIXELS
+  pixels.begin();
+  pixels.setBrightness(127);
   // Setup Serial port
   DEBUG_PORT.begin(500000);
   // Setup CAN
@@ -623,7 +643,14 @@ void setup() {
   //Can1.mailboxStatus();
   //Can2.mailboxStatus();
 
-  pinMode(CAN3_INT, INPUT);                     // Configuring pin for /INT input
+/*  pinMode(CAN3_INT, INPUT);                     // Configuring pin for /INT input
+  pinMode(CAN3_TX0BUF, OUTPUT);                 // Configuring pin for TX0 Buffer
+  digitalWrite(CAN3_TX0BUF,HIGH);               // Set TX0 Buffer pin HIGH
+  pinMode(CAN3_TX1BUF, OUTPUT);                 // Configuring pin for TX1 Buffer
+  digitalWrite(CAN3_TX1BUF,HIGH);               // Set TX1 Buffer pin HIGH
+  pinMode(CAN3_TX2BUF, OUTPUT);                 // Configuring pin for TX2 Buffer
+  digitalWrite(CAN3_TX2BUF,HIGH);               // Set TX2 Buffer pin HIGH */
+  
   if(CANMCP3.begin(MCP_ANY, CAN3_SPEED, MCP_8MHZ) == CAN_OK){
     DEBUG_PORT.print(F("CAN3:\t"));
     if (CAN3_SPEED == 12) {
@@ -636,11 +663,10 @@ void setup() {
   } else {
     DEBUG_PORT.print(F("CAN3: Init Fail!!!\r\n"));
   }
+  
   while (millis()<10000) {
     // do nothing
   }
-  // Setup led Pin
-  pinMode(ledDisp,OUTPUT);
 } // setup()
 
 //**************************************************
@@ -713,4 +739,6 @@ void loop() {
   Can0.events();
   Can1.events();
   Can2.events();
+  pixels.setPixelColor(0, pixels.Color(0,0,0));
+  pixels.show();
 } // loop()
