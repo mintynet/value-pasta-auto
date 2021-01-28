@@ -3,7 +3,7 @@
 #include "mcp_minty.h"
 #include "mcp_can.h"                              // version 1.5 25/09/17 from https://github.com/coryjfowler/MCP_CAN_lib modified for 10MHz SPI
 #include <SPI.h>                                  // version 1.0
-#include <Adafruit_NeoPixel.h>                    // version 1.7.0
+#include <Adafruit_NeoPixel.h>                    // version 1.1.7
 #include <FlexCAN_T4.h>                           // version 2018
 boolean       gDebug            = false;
 boolean       proofDebug        = true;
@@ -22,13 +22,15 @@ unsigned char       rxBuf[8];                     // Used for MCP3 received msgs
 #define             CAN3_INT    9                 // Set INT to pin 9
 #define             CAN3_CS     10                // Set INT to pin 10
 #define             CAN3_SPEED  CAN_500KBPS       // 500kbps
-/*
+
 #define             CAN3_TX0BUF 24                // TX0 RTS Pin
+/*
 #define             CAN3_TX1BUF 25                // TX1 RTS Pin
 #define             CAN3_TX2BUF 26                // TX2 RTS Pin
 #define             CAN3_RX0BF  27                // RX0 INT Pin
 #define             CAN3_RX1BF  28                // RX1 INT Pin
 */
+
 MCP_CAN             CANMCP3(CAN3_CS);             // CAN3 interface using CS on digital pin 10
 
 unsigned int        cnt0  = 0;
@@ -643,13 +645,15 @@ void setup() {
   //Can1.mailboxStatus();
   //Can2.mailboxStatus();
 
-/*  pinMode(CAN3_INT, INPUT);                     // Configuring pin for /INT input
+  pinMode(CAN3_INT, INPUT);                     // Configuring pin for /INT input
   pinMode(CAN3_TX0BUF, OUTPUT);                 // Configuring pin for TX0 Buffer
   digitalWrite(CAN3_TX0BUF,HIGH);               // Set TX0 Buffer pin HIGH
+/*
   pinMode(CAN3_TX1BUF, OUTPUT);                 // Configuring pin for TX1 Buffer
   digitalWrite(CAN3_TX1BUF,HIGH);               // Set TX1 Buffer pin HIGH
   pinMode(CAN3_TX2BUF, OUTPUT);                 // Configuring pin for TX2 Buffer
-  digitalWrite(CAN3_TX2BUF,HIGH);               // Set TX2 Buffer pin HIGH */
+  digitalWrite(CAN3_TX2BUF,HIGH);               // Set TX2 Buffer pin HIGH
+*/
   
   if(CANMCP3.begin(MCP_ANY, CAN3_SPEED, MCP_8MHZ) == CAN_OK){
     DEBUG_PORT.print(F("CAN3:\t"));
