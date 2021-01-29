@@ -1,11 +1,20 @@
+// ************************************************
+// To use TXnBUF pins edit mcp_can.cpp
+// change mcp2515_setRegister(MCP_TXRTSCTRL,0x00);
+// to     mcp2515_setRegister(MCP_TXRTSCTRL,0x07);
+// ************************************************
 #include <SPI.h>
 
 #define CAN3_CS 10
+
+#define MCPADDPINS          1
+#if MCPADDPINS
 #define CAN3_TX0BUF         24                // TX0 RTS Pin
 //#define CAN3_TX1BUF         25                // TX1 RTS Pin
 //#define CAN3_TX2BUF         26                // TX2 RTS Pin
 //#define CAN3_RX0BF          27                // RX0 INT Pin
 //#define CAN3_RX1BF          28                // RX1 INT Pin
+#endif
 
 #define TIMEOUTVALUE        50
 #define CAN_OK              (0)
@@ -115,16 +124,21 @@ void modifyRegister(const uint8_t address, const uint8_t mask, const uint8_t dat
 
 byte tx0RTS()
 {
-  // READY TO SEND
+//  READY TO SEND
+#if MCPADDPINS
 //  Use TX0RTS pin
   digitalWrite(CAN3_TX0BUF, LOW);
   digitalWrite(CAN3_TX0BUF, HIGH);
+//  Serial.println("TX0BUF");
+#else
 //  Use SPI to set RTS
-//  SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
-//  digitalWrite(CAN3_CS, LOW);
-//  SPI.transfer(MCP_RTS_TX0);
-//  digitalWrite(CAN3_CS, HIGH);
-//  SPI.endTransaction();
+  SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
+  digitalWrite(CAN3_CS, LOW);
+  SPI.transfer(MCP_RTS_TX0);
+  digitalWrite(CAN3_CS, HIGH);
+  SPI.endTransaction();
+//  Serial.println("SPI");
+#endif
   delayMicroseconds(120);
   byte res;
   byte idx = 0;

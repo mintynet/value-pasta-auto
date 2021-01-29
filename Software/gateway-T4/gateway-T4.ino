@@ -23,22 +23,24 @@ unsigned char       rxBuf[8];                     // Used for MCP3 received msgs
 #define             CAN3_CS     10                // Set INT to pin 10
 #define             CAN3_SPEED  CAN_500KBPS       // 500kbps
 
+#define             MCPADDPINS  1                 // TXnBUF and RXnBF pins present
+// 
+#if MCPADDPINS
 #define             CAN3_TX0BUF 24                // TX0 RTS Pin
-/*
-#define             CAN3_TX1BUF 25                // TX1 RTS Pin
-#define             CAN3_TX2BUF 26                // TX2 RTS Pin
-#define             CAN3_RX0BF  27                // RX0 INT Pin
-#define             CAN3_RX1BF  28                // RX1 INT Pin
-*/
+//#define             CAN3_TX1BUF 25                // TX1 RTS Pin
+//#define             CAN3_TX2BUF 26                // TX2 RTS Pin
+//#define             CAN3_RX0BF  27                // RX0 INT Pin
+//#define             CAN3_RX1BF  28                // RX1 INT Pin
+#endif
 
 MCP_CAN             CANMCP3(CAN3_CS);             // CAN3 interface using CS on digital pin 10
 
-unsigned int        cnt0  = 0;
-unsigned int        cnt1  = 0;
-unsigned int        cnt2  = 0;
-unsigned int        cnt30 = 0;
-unsigned int        cnt31 = 0;
-unsigned int        cnt32 = 0;
+unsigned int        cnt0        = 0;
+unsigned int        cnt1        = 0;
+unsigned int        cnt2        = 0;
+unsigned int        cnt30       = 0;
+unsigned int        cnt31       = 0;
+unsigned int        cnt32       = 0;
 
 // 0 Powertrain
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> Can0;
@@ -509,102 +511,111 @@ void canSniff2(const CAN_message_t &msg2) {
 //**************************************************
 
 static void serialMenu() {
+  int checkno = 0;
+  static char cmdbuf[8];
   CAN_message_t msg;
   if (DEBUG_PORT.available()) {
-    char ser = DEBUG_PORT.read();
-    switch (ser)
-    {
-      case '1':     // reboot body ECU
-        msg.id = resetMSG;
-        msg.len = 0x0;
-        Can2.write(msg);
-        break;
-      case '2':     // reboot chassis ECU
-        msg.id = resetMSG;
-        msg.len = 0x0;
-        Can1.write(msg);
-        break;
-      case '3':     // reboot body and chassis ECU
-        msg.id = resetMSG;
-        msg.len = 0x0;
-        Can2.write(msg);
-        delay(50);
-        Can1.write(msg);
-        break;
-      case '4':     // reboot powertrain ECU
-        msg.id = resetMSG;
-        msg.len = 0x0;
-        Can0.write(msg);
-        break;
-      case '5':     // reboot body and powertrain ECU
-        msg.id = resetMSG;
-        msg.len = 0x0;
-        Can2.write(msg);
-        delay(50);
-        Can0.write(msg);
-        break;
-      case '6':     // reboot chassis and powertrain ECU
-        msg.id = resetMSG;
-        msg.len = 0x0;
-        Can1.write(msg);
-        delay(50);
-        Can0.write(msg);
-        break;
-      case '7':     // reboot body, chassis and powertrain ECU
-        msg.id = resetMSG;
-        msg.len = 0x0;
-        Can2.write(msg);
-        delay(50);
-        Can1.write(msg);
-        delay(50);
-        Can0.write(msg);
-        break;
-      case '8':     // reboot gateway ECU
-        SCB_AIRCR = 0x05FA0004;
-        break;
-      case 'F':     // reboot all ECUs
-        msg.id = resetMSG;
-        msg.len = 0x0;
-        Can2.write(msg);
-        delay(50);
-        Can1.write(msg);
-        delay(50);
-        Can0.write(msg);
-        delay(50);
-        SCB_AIRCR = 0x05FA0004;
-        break;
-      case 'd':     // toggle DEBUG
-        gDebug=!gDebug;
-        break;
-      case 'h':     // help
-        DEBUG_PORT.println(F("f\tToggle firewall"));
-        DEBUG_PORT.println(F("1\tReboot Body ECU"));
-        DEBUG_PORT.println(F("2\tReboot Chassis ECU"));
-        DEBUG_PORT.println(F("4\tReboot Powertrain ECU"));
-        DEBUG_PORT.println(F("8\tReboot Gateway ECU"));
-        break;
-      case 'f':     // firewall toggle
-        firewallOpen0 = !firewallOpen0;
-        firewallOpen1 = !firewallOpen1;
-        firewallOpen2 = !firewallOpen2;
-        if (firewallOpen0) {
-          DEBUG_PORT.println(F("Firewall 0 Open"));
-        } else {
-          DEBUG_PORT.println(F("Firewall 0 Closed"));
+    for (int i=0; i < 8; i++) {
+      char ser = DEBUG_PORT.read();
+      cmdbuf[i] = ser;
+      if (ser == '\r') {
+        checkno = cmdbuf[1];
+        if (checkno >= '0' && checkno <= '9') {
+          checkno = checkno - '0';
+        } else if (checkno >= 'A' && checkno <= 'F') {
+          checkno = checkno - 'A' + 10;
+        } else if (checkno >= 'a' && checkno <= 'f') {
+          checkno = checkno - 'a' + 10;
         }
-        if (firewallOpen1) {
-          DEBUG_PORT.println(F("Firewall 1 Open"));
-        } else {
-          DEBUG_PORT.println(F("Firewall 1 Closed"));
+        switch (cmdbuf[0]) {
+          case 'd':     // toggle DEBUG
+            gDebug=!gDebug;
+            break;
+          case 'h':     // help
+            DEBUG_PORT.println(F("HELP FUNCTIONS"));
+            DEBUG_PORT.println();
+            DEBUG_PORT.println(F("f\tToggle All firewalls"));
+            DEBUG_PORT.println(F("f1\tToggle PT  firewall"));
+            DEBUG_PORT.println(F("f2\tToggle CH  firewall"));
+            DEBUG_PORT.println(F("f4\tToggle BO  firewall"));
+            DEBUG_PORT.println(F("\tadd numbers to change multiple"));           
+            DEBUG_PORT.println(F("r\tReboot All ECUs"));
+            DEBUG_PORT.println(F("r1\tReboot PT  ECU"));
+            DEBUG_PORT.println(F("r2\tReboot CH  ECU"));
+            DEBUG_PORT.println(F("r4\tReboot BO  ECU"));
+            DEBUG_PORT.println(F("r8\tReboot GW  ECU"));
+            DEBUG_PORT.println(F("\tadd numbers to reboot multiple"));           
+            DEBUG_PORT.println(F("d\tToggle Debug"));           
+            break;
+          case 'r':     // reboot ECUs
+            if (cmdbuf[1] == '\r') {
+                msg.id = resetMSG;
+                msg.len = 0x0;
+                Can0.write(msg);
+                delayMicroseconds(100);
+                Can1.write(msg);
+                delayMicroseconds(100);
+                Can2.write(msg);
+                delayMicroseconds(100);
+                SCB_AIRCR = 0x05FA0004;
+            } else {
+              if ((checkno&0x1)>>0) {
+                msg.id = resetMSG;
+                msg.len = 0x0;
+                Can0.write(msg);
+              }
+              if ((checkno&0x2)>>1) {
+                msg.id = resetMSG;
+                msg.len = 0x0;
+                Can1.write(msg);
+              }
+              if ((checkno&0x4)>>2) {
+                msg.id = resetMSG;
+                msg.len = 0x0;
+                Can2.write(msg);
+              }
+              if ((checkno&0x8)>>3) {
+                SCB_AIRCR = 0x05FA0004;
+              }
+            }
+            break;
+          case 'f':     // firewall toggle
+            if(cmdbuf[1] == '\r') {
+              firewallOpen0 = !firewallOpen0;
+              firewallOpen1 = !firewallOpen1;
+              firewallOpen2 = !firewallOpen2;
+            } else {
+              if((checkno & 0x01)>>0) {
+                firewallOpen0 = !firewallOpen0;
+              }
+              if((checkno & 0x02)>>1) {
+                firewallOpen1 = !firewallOpen1;
+              }
+              if((checkno & 0x04)>>2) {
+                firewallOpen2 = !firewallOpen2;
+              }
+            }
+            if (firewallOpen0) {
+              DEBUG_PORT.println(F("Firewall 0\tOpen"));
+            } else {
+              DEBUG_PORT.println(F("Firewall 0\tClosed"));
+            }
+            if (firewallOpen1) {
+              DEBUG_PORT.println(F("Firewall 1\tOpen"));
+            } else {
+              DEBUG_PORT.println(F("Firewall 1\tClosed"));
+            }
+            if (firewallOpen2) {
+              DEBUG_PORT.println(F("Firewall 2\tOpen"));
+            } else {
+              DEBUG_PORT.println(F("Firewall 2\tClosed"));
+            }
+            break;
+          default:
+            break;
         }
-        if (firewallOpen2) {
-          DEBUG_PORT.println(F("Firewall 2 Open"));
-        } else {
-          DEBUG_PORT.println(F("Firewall 2 Closed"));
-        }
-        break;
-      default:
-        break;
+      }
+    delayMicroseconds(50);
     }
   }
 } //serialMenu()
@@ -617,9 +628,9 @@ void setup() {
   // Setup NEOPIXELS
   pixels.begin();
   pixels.setBrightness(127);
-  // Setup Serial port
+  // Setup SERIAL PORT
   DEBUG_PORT.begin(500000);
-  // Setup CAN
+  // Setup ON CHIP CAN
   Can0.begin();
   Can0.setBaudRate(CANBUSSPEED0);
   Can0.setClock(CLK_60MHz);
@@ -644,17 +655,21 @@ void setup() {
   //Can0.mailboxStatus();
   //Can1.mailboxStatus();
   //Can2.mailboxStatus();
-
+  // Setup MCP2515 CAN
   pinMode(CAN3_INT, INPUT);                     // Configuring pin for /INT input
+#if MCPADDPINS
   pinMode(CAN3_TX0BUF, OUTPUT);                 // Configuring pin for TX0 Buffer
   digitalWrite(CAN3_TX0BUF,HIGH);               // Set TX0 Buffer pin HIGH
-/*
-  pinMode(CAN3_TX1BUF, OUTPUT);                 // Configuring pin for TX1 Buffer
-  digitalWrite(CAN3_TX1BUF,HIGH);               // Set TX1 Buffer pin HIGH
-  pinMode(CAN3_TX2BUF, OUTPUT);                 // Configuring pin for TX2 Buffer
-  digitalWrite(CAN3_TX2BUF,HIGH);               // Set TX2 Buffer pin HIGH
-*/
-  
+//  pinMode(CAN3_TX1BUF, OUTPUT);                 // Configuring pin for TX1 Buffer
+//  digitalWrite(CAN3_TX1BUF,HIGH);               // Set TX1 Buffer pin HIGH
+//  pinMode(CAN3_TX2BUF, OUTPUT);                 // Configuring pin for TX2 Buffer
+//  digitalWrite(CAN3_TX2BUF,HIGH);               // Set TX2 Buffer pin HIGH
+  DEBUG_PORT.println("TXnBUF\t\tTRUE!");
+  pixels.setPixelColor(0, pixels.Color(0,255,0));
+#else
+  pixels.setPixelColor(0, pixels.Color(0,0,255));
+#endif
+  pixels.show();
   if(CANMCP3.begin(MCP_ANY, CAN3_SPEED, MCP_8MHZ) == CAN_OK){
     DEBUG_PORT.print(F("CAN3:\t"));
     if (CAN3_SPEED == 12) {
@@ -705,15 +720,15 @@ void loop() {
         if((rxBuf[1] == unlockBuf[1])&(rxBuf[2] == unlockBuf[2])&(rxBuf[3] == unlockBuf[3])&(rxBuf[4] == unlockBuf[4])&(rxBuf[5] == unlockBuf[5])&(rxBuf[6] == unlockBuf[6])&(rxBuf[7] == unlockBuf[7])) {
           if((rxBuf[0]&0x01)>>0) {
             firewallOpen0 = true;
-            DEBUG_PORT.println(F("Firewall0 unlock"));
+            DEBUG_PORT.println(F("Firewall 0\tOpen"));
           }
           if((rxBuf[0]&0x02)>>1) {
             firewallOpen1 = true;
-            DEBUG_PORT.println(F("Firewall1 unlock"));
+            DEBUG_PORT.println(F("Firewall 1\tOpen"));
           }
           if((rxBuf[0]&0x04)>>2) {
             firewallOpen2 = true;
-            DEBUG_PORT.println(F("Firewall2 unlock"));
+            DEBUG_PORT.println(F("Firewall 2\tOpen"));
           }
         }
         break;
@@ -721,15 +736,15 @@ void loop() {
         if((rxBuf[1] == unlockBuf[1])&(rxBuf[2] == unlockBuf[2])&(rxBuf[3] == unlockBuf[3])&(rxBuf[4] == unlockBuf[4])&(rxBuf[5] == unlockBuf[5])&(rxBuf[6] == unlockBuf[6])&(rxBuf[7] == unlockBuf[7])) {
           if((rxBuf[0]&0x01)>>0) {
             firewallOpen0 = false;
-            DEBUG_PORT.println(F("Firewall0 lock"));         
+            DEBUG_PORT.println(F("Firewall 0\tClosed"));         
           }
           if((rxBuf[0]&0x02)>>1) {
             firewallOpen1 = false;
-            DEBUG_PORT.println(F("Firewall1 lock"));         
+            DEBUG_PORT.println(F("Firewall 1\tClosed"));         
           }
           if((rxBuf[0]&0x04)>>2) {
             firewallOpen2 = false;
-            DEBUG_PORT.println(F("Firewall2 lock"));         
+            DEBUG_PORT.println(F("Firewall 2\tClosed"));         
           }
         }
         break;
