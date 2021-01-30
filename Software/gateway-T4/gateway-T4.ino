@@ -1,7 +1,7 @@
                                                   // Teensyduino 1.53
                                                   // Arduino 1.8.13
 #include "mcp_minty.h"
-#include "mcp_can.h"                              // version 1.5 25/09/17 from https://github.com/coryjfowler/MCP_CAN_lib modified for 10MHz SPI
+#include <mcp_can.h>                              // version 1.5 25/09/17 from https://github.com/coryjfowler/MCP_CAN_lib modified for 10MHz SPI
 #include <SPI.h>                                  // version 1.0
 #include <Adafruit_NeoPixel.h>                    // version 1.1.7
 #include <FlexCAN_T4.h>                           // version 2018
@@ -11,9 +11,9 @@ boolean       firewallOpen0     = false;
 boolean       firewallOpen1     = false;
 boolean       firewallOpen2     = false;
 
-const unsigned long unlockId    = 0x123;
-const unsigned long lockId      = 0x124;
-byte unlockBuf[8]               = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07};
+const unsigned long unlockId    = 0x123;          // CAN-ID to unlock the ODB2 firewall
+const unsigned long lockId      = 0x124;          // CAN-ID to lock the ODB2 firewall
+byte unlockBuf[8]               = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07}; // data to lock/unlock byte 0 configures which ECU
 
 long unsigned int   rxId;                         // Used for MCP3 received msgs
 unsigned char       len         = 0;              // Used for MCP3 received msgs
@@ -23,17 +23,14 @@ unsigned char       rxBuf[8];                     // Used for MCP3 received msgs
 #define             CAN3_CS     10                // Set INT to pin 10
 #define             CAN3_SPEED  CAN_500KBPS       // 500kbps
 
-#define             MCPADDPINS  1                 // TXnBUF and RXnBF pins present
-// 
-#if MCPADDPINS
 #define             CAN3_TX0BUF 24                // TX0 RTS Pin
 //#define             CAN3_TX1BUF 25                // TX1 RTS Pin
 //#define             CAN3_TX2BUF 26                // TX2 RTS Pin
 //#define             CAN3_RX0BF  27                // RX0 INT Pin
 //#define             CAN3_RX1BF  28                // RX1 INT Pin
-#endif
 
 MCP_CAN             CANMCP3(CAN3_CS);             // CAN3 interface using CS on digital pin 10
+MCP_CAN_MINTY       CANMCP3MINTY(CAN3_CS,CAN3_TX0BUF);
 
 unsigned int        cnt0        = 0;
 unsigned int        cnt1        = 0;
@@ -251,7 +248,7 @@ void canSniff0(const CAN_message_t &msg0) {
     }
     //msg0.buf[5]=0xff;
     //byte sndStat = CANMCP3.sendMsgBuf(msg0.id,0,msg0.len,msg0.buf);
-    byte sndStat = sendTX0(msg0.id,msg0.len,msg0.buf,1);
+    byte sndStat = CANMCP3MINTY.sendTX0(msg0.id,msg0.len,msg0.buf,1);
     if((millis0>20000)&(millis0<21001)&(proofDebug)&(sndStat==CAN_OK)) {
       cnt30++;
     }
@@ -364,7 +361,7 @@ void canSniff1(const CAN_message_t &msg1) {
     }
     //msg1.buf[6]=0xff;
     //byte sndStat = CANMCP3.sendMsgBuf(msg1.id,0,msg1.len,msg1.buf);
-    byte sndStat = sendTX0(msg1.id,msg1.len,msg1.buf,1);
+    byte sndStat = CANMCP3MINTY.sendTX0(msg1.id,msg1.len,msg1.buf,1);
     if((millis1>20000)&(millis1<21001)&(proofDebug)&(sndStat==CAN_OK)) {
       cnt31++;
     }
@@ -485,7 +482,7 @@ void canSniff2(const CAN_message_t &msg2) {
     }
     //msg2.buf[7]=0xff;
     //byte sndStat = CANMCP3.sendMsgBuf(msg2.id,0,msg2.len,msg2.buf);
-    byte sndStat = sendTX0(msg2.id,msg2.len,msg2.buf,1);
+    byte sndStat = CANMCP3MINTY.sendTX0(msg2.id,msg2.len,msg2.buf,1);
     if((millis2>20000)&(millis2<21001)&(proofDebug)&(sndStat==CAN_OK)) {
       cnt32++;
     }
@@ -505,6 +502,76 @@ void canSniff2(const CAN_message_t &msg2) {
   //}
   //Serial.println();
 } // canSniff2()
+
+//**************************************************
+// canSniff3() OBD2
+//**************************************************
+
+void canSniff3() {
+  int checkno = 0;
+  CAN_message_t msg;
+  if(!digitalRead(CAN3_INT)) {
+    CANMCP3.readMsgBuf(&rxId, &len, rxBuf);
+    checkno = rxBuf[0];
+    switch (rxId) {
+      case unlockId:
+        if((rxBuf[1] == unlockBuf[1])&(rxBuf[2] == unlockBuf[2])&(rxBuf[3] == unlockBuf[3])&(rxBuf[4] == unlockBuf[4])&(rxBuf[5] == unlockBuf[5])&(rxBuf[6] == unlockBuf[6])&(rxBuf[7] == unlockBuf[7])) {
+          if((checkno&0x01)>>0) {
+            firewallOpen0 = true;
+            DEBUG_PORT.println(F("Firewall 0\tOpen"));
+          }
+          if((checkno&0x02)>>1) {
+            firewallOpen1 = true;
+            DEBUG_PORT.println(F("Firewall 1\tOpen"));
+          }
+          if((checkno&0x04)>>2) {
+            firewallOpen2 = true;
+            DEBUG_PORT.println(F("Firewall 2\tOpen"));
+          }
+        }
+        break;
+      case lockId:
+        if((rxBuf[1] == unlockBuf[1])&(rxBuf[2] == unlockBuf[2])&(rxBuf[3] == unlockBuf[3])&(rxBuf[4] == unlockBuf[4])&(rxBuf[5] == unlockBuf[5])&(rxBuf[6] == unlockBuf[6])&(rxBuf[7] == unlockBuf[7])) {
+          if((checkno&0x01)>>0) {
+            firewallOpen0 = false;
+            DEBUG_PORT.println(F("Firewall 0\tClosed"));         
+          }
+          if((checkno&0x02)>>1) {
+            firewallOpen1 = false;
+            DEBUG_PORT.println(F("Firewall 1\tClosed"));         
+          }
+          if((checkno&0x04)>>2) {
+            firewallOpen2 = false;
+            DEBUG_PORT.println(F("Firewall 2\tClosed"));         
+          }
+        }
+        break;
+      case resetMSG:
+        if((checkno&0x01)>>0) {
+          msg.id = resetMSG;
+          msg.len = 0;
+          Can0.write(msg);
+        }
+        if((checkno&0x02)>>1) {
+          msg.id = resetMSG;
+          msg.len = 0;
+          Can1.write(msg);
+        }
+        if((checkno&0x04)>>2) {
+          msg.id = resetMSG;
+          msg.len = 0;
+          Can2.write(msg);
+        }
+        if((checkno&0x08)>>3) {
+          delayMicroseconds(500);
+          SCB_AIRCR = 0x05FA0004;
+        }
+        break;
+      default:
+        break;
+    }
+  }
+} // canSniff3()
 
 //**************************************************
 // serialMenu()
@@ -575,6 +642,7 @@ static void serialMenu() {
                 Can2.write(msg);
               }
               if ((checkno&0x8)>>3) {
+                delayMicroseconds(250);
                 SCB_AIRCR = 0x05FA0004;
               }
             }
@@ -658,12 +726,6 @@ void setup() {
   // Setup MCP2515 CAN
   pinMode(CAN3_INT, INPUT);                     // Configuring pin for /INT input
 #if MCPADDPINS
-  pinMode(CAN3_TX0BUF, OUTPUT);                 // Configuring pin for TX0 Buffer
-  digitalWrite(CAN3_TX0BUF,HIGH);               // Set TX0 Buffer pin HIGH
-//  pinMode(CAN3_TX1BUF, OUTPUT);                 // Configuring pin for TX1 Buffer
-//  digitalWrite(CAN3_TX1BUF,HIGH);               // Set TX1 Buffer pin HIGH
-//  pinMode(CAN3_TX2BUF, OUTPUT);                 // Configuring pin for TX2 Buffer
-//  digitalWrite(CAN3_TX2BUF,HIGH);               // Set TX2 Buffer pin HIGH
   DEBUG_PORT.println("TXnBUF\t\tTRUE!");
   pixels.setPixelColor(0, pixels.Color(0,255,0));
 #else
@@ -713,51 +775,13 @@ void loop() {
       //
     //}
   }
-  if(!digitalRead(CAN3_INT)) {
-    CANMCP3.readMsgBuf(&rxId, &len, rxBuf);
-    switch (rxId) {
-      case unlockId:
-        if((rxBuf[1] == unlockBuf[1])&(rxBuf[2] == unlockBuf[2])&(rxBuf[3] == unlockBuf[3])&(rxBuf[4] == unlockBuf[4])&(rxBuf[5] == unlockBuf[5])&(rxBuf[6] == unlockBuf[6])&(rxBuf[7] == unlockBuf[7])) {
-          if((rxBuf[0]&0x01)>>0) {
-            firewallOpen0 = true;
-            DEBUG_PORT.println(F("Firewall 0\tOpen"));
-          }
-          if((rxBuf[0]&0x02)>>1) {
-            firewallOpen1 = true;
-            DEBUG_PORT.println(F("Firewall 1\tOpen"));
-          }
-          if((rxBuf[0]&0x04)>>2) {
-            firewallOpen2 = true;
-            DEBUG_PORT.println(F("Firewall 2\tOpen"));
-          }
-        }
-        break;
-      case lockId:
-        if((rxBuf[1] == unlockBuf[1])&(rxBuf[2] == unlockBuf[2])&(rxBuf[3] == unlockBuf[3])&(rxBuf[4] == unlockBuf[4])&(rxBuf[5] == unlockBuf[5])&(rxBuf[6] == unlockBuf[6])&(rxBuf[7] == unlockBuf[7])) {
-          if((rxBuf[0]&0x01)>>0) {
-            firewallOpen0 = false;
-            DEBUG_PORT.println(F("Firewall 0\tClosed"));         
-          }
-          if((rxBuf[0]&0x02)>>1) {
-            firewallOpen1 = false;
-            DEBUG_PORT.println(F("Firewall 1\tClosed"));         
-          }
-          if((rxBuf[0]&0x04)>>2) {
-            firewallOpen2 = false;
-            DEBUG_PORT.println(F("Firewall 2\tClosed"));         
-          }
-        }
-        break;
-      case resetMSG:
-        SCB_AIRCR = 0x05FA0004;
-        break;
-      default:
-        break;
-    }
-  }
   Can0.events();
   Can1.events();
   Can2.events();
+  canSniff3();
   pixels.setPixelColor(0, pixels.Color(0,0,0));
   pixels.show();
 } // loop()
+/**************************************************
+ END FILE
+**************************************************/
