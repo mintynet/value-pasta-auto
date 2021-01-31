@@ -135,7 +135,6 @@ INT8U MCP_CAN_MINTY::sendTX0(INT32U id, INT8U len, INT8U *data, bool fastMode)
   res = tx0RTS();
   return res;
 } // sendTX0()
-
 /**************************************************
  END FILE
 **************************************************/

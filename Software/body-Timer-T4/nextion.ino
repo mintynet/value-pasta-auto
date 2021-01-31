@@ -404,24 +404,39 @@ void dispNext() {
         (ecu_data.doorLockStatusRAW!=ecu_data_old.doorLockStatusRAW)|
         (ecu_data.brakeValueRAW!=ecu_data_old.brakeValueRAW)) {
       dispBody();
-      if (gDebug == true) {
-        DEBUG_PORT.println(F("STEER"));
-        DEBUG_PORT.println(ecu_data.steeringValueRAW,HEX);
-        DEBUG_PORT.println(ecu_data_old.steeringValueRAW,HEX);
-        DEBUG_PORT.println(F("BRAKE"));
+      if (gDebug) {
+        DEBUG_PORT.println(F("************************************************************"));
+        DEBUG_PORT.println(F("FRONT WIPER"));
+        DEBUG_PORT.println(ecu_data.frontWiperStatusRAW,HEX);
+        DEBUG_PORT.println(ecu_data_old.frontWiperStatusRAW,HEX);
+        DEBUG_PORT.println(F("REAR WIPER"));
+        DEBUG_PORT.println(ecu_data.rearWiperStatusRAW,HEX);
+        DEBUG_PORT.println(ecu_data_old.rearWiperStatusRAW,HEX);
+        DEBUG_PORT.println(F("LIGHTS"));
+        DEBUG_PORT.println(ecu_data.lightIndicatorRAW,HEX);
+        DEBUG_PORT.println(ecu_data_old.lightIndicatorRAW,HEX);
+        DEBUG_PORT.println(F("INDICATORS"));
+        DEBUG_PORT.println(ecu_data.turnSignalIndicatorRAW,HEX);
+        DEBUG_PORT.println(ecu_data_old.turnSignalIndicatorRAW,HEX);
+        DEBUG_PORT.println(F("LEFT DOOR"));
+        DEBUG_PORT.println(ecu_data.lDoorSwValueRAW,HEX);
+        DEBUG_PORT.println(ecu_data_old.lDoorSwValueRAW,HEX);
+        DEBUG_PORT.println(F("RIGHT DOOR"));
+        DEBUG_PORT.println(ecu_data.rDoorSwValueRAW,HEX);
+        DEBUG_PORT.println(ecu_data_old.rDoorSwValueRAW,HEX);
+        DEBUG_PORT.println(F("LOCKS"));
+        DEBUG_PORT.println(ecu_data.doorLockStatusRAW,HEX);
+        DEBUG_PORT.println(ecu_data_old.doorLockStatusRAW,HEX);
+        DEBUG_PORT.println(F("BRAKES"));
         DEBUG_PORT.println(ecu_data.brakeValueRAW,HEX);
         DEBUG_PORT.println(ecu_data_old.brakeValueRAW,HEX);
-        DEBUG_PORT.println(F("ACCELERATOR"));
-        DEBUG_PORT.println(ecu_data.acceleratorValueRAW,HEX);
-        DEBUG_PORT.println(ecu_data_old.acceleratorValueRAW,HEX);
-        DEBUG_PORT.println(F("SHIFT"));
-        DEBUG_PORT.println(ecu_data.shiftPositionRAW,HEX);
-        DEBUG_PORT.println(ecu_data_old.shiftPositionRAW,HEX);
-        DEBUG_PORT.println(F("PARKING"));
-        DEBUG_PORT.println(ecu_data.parkingValueRAW,HEX);
-        DEBUG_PORT.println(ecu_data_old.parkingValueRAW,HEX);
+        DEBUG_PORT.println(F("************************************************************"));
         DEBUG_PORT.println(millis());
+        DEBUG_PORT.println(F("************************************************************"));
       }
     }
   }
 } //dispNext()
+/**************************************************
+ END FILE
+**************************************************/

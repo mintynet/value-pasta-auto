@@ -260,26 +260,16 @@ void checkNext() {
 
 void dispNext() {
   if (nextPage==1) {
-    if ((ecu_data.steeringValueRAW != ecu_data_old.steeringValueRAW)|(ecu_data.brakeValueRAW != ecu_data_old.brakeValueRAW)|(ecu_data.acceleratorValueRAW != ecu_data_old.acceleratorValueRAW)|(ecu_data.shiftPositionRAW != ecu_data_old.shiftPositionRAW)|(ecu_data.parkingValueRAW!=ecu_data_old.parkingValueRAW)|(ecu_data.mcpA!=ecu_data_old.mcpA)|(potValue!=potValue_old)) {
+    if ((ecu_data.steeringValueRAW != ecu_data_old.steeringValueRAW)|
+        (ecu_data.brakeValueRAW != ecu_data_old.brakeValueRAW)|
+        (ecu_data.acceleratorValueRAW != ecu_data_old.acceleratorValueRAW)|
+        (ecu_data.shiftPositionRAW != ecu_data_old.shiftPositionRAW)|
+        (ecu_data.parkingValueRAW!=ecu_data_old.parkingValueRAW)|
+        (ecu_data.mcpA!=ecu_data_old.mcpA)|(potValue!=potValue_old)) {
       dispPowertrain();
-      if (gDebug == true) {
-        DEBUG_PORT.println(F("STEER"));
-        DEBUG_PORT.println(ecu_data.steeringValueRAW,HEX);
-        DEBUG_PORT.println(ecu_data_old.steeringValueRAW,HEX);
-        DEBUG_PORT.println(F("BRAKE"));
-        DEBUG_PORT.println(ecu_data.brakeValueRAW,HEX);
-        DEBUG_PORT.println(ecu_data_old.brakeValueRAW,HEX);
-        DEBUG_PORT.println(F("ACCELERATOR"));
-        DEBUG_PORT.println(ecu_data.acceleratorValueRAW,HEX);
-        DEBUG_PORT.println(ecu_data_old.acceleratorValueRAW,HEX);
-        DEBUG_PORT.println(F("SHIFT"));
-        DEBUG_PORT.println(ecu_data.shiftPositionRAW,HEX);
-        DEBUG_PORT.println(ecu_data_old.shiftPositionRAW,HEX);
-        DEBUG_PORT.println(F("PARKING"));
-        DEBUG_PORT.println(ecu_data.parkingValueRAW,HEX);
-        DEBUG_PORT.println(ecu_data_old.parkingValueRAW,HEX);
-        DEBUG_PORT.println(millis());
-      }
     }
   }
 } //dispNext()
+/**************************************************
+ END FILE
+**************************************************/
