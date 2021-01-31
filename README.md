@@ -48,7 +48,7 @@ MCP23017 I/O Inputs unless otherwise stated
 | Shift Position switch UP | 5 | TURN switch R | | N/A | 5 | N/A |
 | Rear Wiper switch SLOW | 6 | HAZARD switch | | N/A | 6 | N/A |
 | Rear Wiper switch FAST | 7 | Start BUTTON | | N/A | 7 | Ignition OUTPUT |
-| HORN switch | 8 | Parking Brake switch | | N/A | 8 | Parking Brake OUTPUT |
+| HORN switch | 8 | Parking Brake switch | | HORN OUTPUT | 8 | Parking Brake OUTPUT |
 
 |Analogue Port|Value|
 |:---:|:---:|
