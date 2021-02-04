@@ -22,10 +22,9 @@ class MCP_CAN_MINTY
 
   private:
   void setupTX0Buf (const INT32U id, const INT8U len, const INT8U *data, const bool fastMode);
-  INT8U readCANStatus(void);
   void modifyRegister(const INT8U address, const INT8U mask, const INT8U data);
+  INT8U readCANStatus(void);
   INT8U tx0RTS(void);
-  void setupTX0Buf (INT32U id, INT8U len, INT8U *data, bool fastMode);
 
   public:
   MCP_CAN_MINTY(INT8U _CS, INT8U _TX0BUF);

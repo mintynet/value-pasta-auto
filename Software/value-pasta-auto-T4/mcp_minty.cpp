@@ -15,7 +15,7 @@ MCP_CAN_MINTY::MCP_CAN_MINTY(INT8U _CS, INT8U _TX0BUF)
  setupTX0Buf()
 **************************************************/
 
-void MCP_CAN_MINTY::setupTX0Buf (unsigned long id, byte len, uint8_t *data, bool fastMode)
+void MCP_CAN_MINTY::setupTX0Buf (const INT32U id, const INT8U len, const INT8U *data, bool fastMode)
 {
   uint16_t canid;
   uint8_t tbufdata[4];

@@ -1,121 +1,132 @@
                                                   // Teensyduino 1.53
                                                   // Arduino 1.8.13
-#include "mcp_minty.h"
-#include <mcp_can.h>                              // version 1.5 25/09/17 from https://github.com/coryjfowler/MCP_CAN_lib modified for 10MHz SPI
 #include <SPI.h>                                  // version 1.0
-#include <Adafruit_NeoPixel.h>                    // version 1.1.7
 #include <FlexCAN_T4.h>                           // version 2018
+#include <mcp_can.h>                              // version 1.5 25/09/17 from https://github.com/coryjfowler/MCP_CAN_lib modified for 10MHz SPI
+#include "mcp_minty.h"
 #include <Adafruit_MCP23017.h>                    // version 1.2.0
+#include <Adafruit_NeoPixel.h>                    // version 1.1.7
 #include <ResponsiveAnalogRead.h>                 // version 1.2.1
-byte          ecuNumber         = 3;              // 0=PT,1=CH,2=BO,3=GW
-boolean       gDebug            = false;
-boolean       proofDebug        = true;
-boolean       firewallOpen0     = false;
-boolean       firewallOpen1     = false;
-boolean       firewallOpen2     = false;
 
-const unsigned long unlockId    = 0x123;          // CAN-ID to unlock the ODB2 firewall
-const unsigned long lockId      = 0x124;          // CAN-ID to lock the ODB2 firewall
-byte unlockBuf[8]               = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07}; // data to lock/unlock byte 0 configures which ECU
-
-long unsigned int   rxId;                         // Used for MCP3 received msgs
-unsigned char       len         = 0;              // Used for MCP3 received msgs
-unsigned char       rxBuf[8];                     // Used for MCP3 received msgs
-#define             MAX_PIXELS  1                 // Number of Neopixels
-#define             CAN3_INT    9                 // Set INT to pin 9
-#define             CAN3_CS     10                // Set INT to pin 10
-#define             CAN3_SPEED  CAN_500KBPS       // 500kbps
-
-#define             CAN3_TX0BUF 24                // TX0 RTS Pin
-//#define             CAN3_TX1BUF 25                // TX1 RTS Pin
-//#define             CAN3_TX2BUF 26                // TX2 RTS Pin
-//#define             CAN3_RX0BF  27                // RX0 INT Pin
-//#define             CAN3_RX1BF  28                // RX1 INT Pin
-
-MCP_CAN             CANMCP3(CAN3_CS);             // CAN3 interface using CS on digital pin 10
-MCP_CAN_MINTY       CANMCP3MINTY(CAN3_CS,CAN3_TX0BUF);
-
-unsigned int        cnt0        = 0;
-unsigned int        cnt1        = 0;
-unsigned int        cnt2        = 0;
-unsigned int        cnt30       = 0;
-unsigned int        cnt31       = 0;
-unsigned int        cnt32       = 0;
+byte ecuNumber          = 0;                      // NUMBER IS READ FROM D2 & D3:0=PT,1=CH,2=BO,3=GW
 
 // 0 Powertrain
-FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> Can0;
+FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> Can0;   // ALL: CAN0 Bus
 // 1 Chassis
-FlexCAN_T4<CAN2, RX_SIZE_256, TX_SIZE_16> Can1;
+FlexCAN_T4<CAN2, RX_SIZE_256, TX_SIZE_16> Can1;   // GW: CAN1 Bus
 // 2 Body
-FlexCAN_T4<CAN3, RX_SIZE_256, TX_SIZE_16> Can2;
+FlexCAN_T4<CAN3, RX_SIZE_256, TX_SIZE_16> Can2;   // GW: CAN2 Bus
 
-Adafruit_MCP23017 mcpA, mcpB;
+// 0 Powertrain
+const int CANBUSSPEED0  = 500000;                 // ALL: CAN0 speed
+// 1 Chassis
+const int CANBUSSPEED1  = 500000;                 // GW: CAN1 speed
+// 2 Body
+const int CANBUSSPEED2  = 500000;                 // GW: CAN2 speed
+// 3 OBD2
+const int CANBUSSPEED3  = 500000;                 // GW: CAN3 speed
 
-#define DEBUG_PORT    Serial
-#define BT_CAR_PORT   Serial4
-#define NEXTION_PORT  Serial5
+#define             CAN3_INT    9                 // GW: Set INT to pin 9
+#define             CAN3_CS     10                // GW: Set INT to pin 10
+#define             CAN3_SPEED  CAN_500KBPS       // GW: 500kbps
 
-const byte NEO_PIN = 4;
+#define             CAN3_TX0BUF 24                // GW: TX0 RTS Pin
+//#define             CAN3_TX1BUF 25                // GW: TX1 RTS Pin
+//#define             CAN3_TX2BUF 26                // GW: TX2 RTS Pin
+//#define             CAN3_RX0BF  27                // GW: RX0 INT Pin
+//#define             CAN3_RX1BF  28                // GW: RX1 INT Pin
+
+MCP_CAN             CANMCP3(CAN3_CS);             // GW: CAN3 interface using CS on digital pin 10
+MCP_CAN_MINTY       CANMCP3MINTY(CAN3_CS,CAN3_TX0BUF);
+                                                  // GW: CAN3 library to use TX0BUF for sending
+
+Adafruit_MCP23017   mcpA;                         // PT: & CH: MCP23017
+Adafruit_MCP23017   mcpB;                         // CH:  MCP23017
+
+#define             MAX_PIXELS  1                 // GW: Number of Neopixels
+#define             ECU_NUM_HI  2                 // ALL: Used to ID ECU
+#define             ECU_NUM_LO  3                 // ALL: Used to ID ECU
+#define             NEO_PIN     4                 // GW: Pin for Neopixel/LED
 
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(MAX_PIXELS, NEO_PIN, NEO_GRB + NEO_KHZ800);
+                                                  // GW: Define Neopixel
 
-const byte ana0x01A = A0;
-ResponsiveAnalogRead analog0(ana0x01A,true);
-const byte ana0x02F = A1;
-ResponsiveAnalogRead analog1(ana0x02F,true);
-const byte ana0x058 = A2;
-ResponsiveAnalogRead analog2(ana0x058,true);
+const byte ana0x01A     = A0;                     // PT: CH: Analog0
+const byte ana0x02F     = A1;                     // CH: Analog1
+const byte ana0x058     = A2;                     // CH: Analog2
+ResponsiveAnalogRead analog0(ana0x01A,true);      // PT: CH: Analog0
+ResponsiveAnalogRead analog1(ana0x02F,true);      // CH: Analog1
+ResponsiveAnalogRead analog2(ana0x058,true);      // CH: Analog2
 
-IntervalTimer my100Timer;
-IntervalTimer my20Timer;
-IntervalTimer my10Timer;
-IntervalTimer my2Timer;
+IntervalTimer my100Timer;                         // PT: CH: BO: Define Timer
+IntervalTimer my20Timer;                          // PT: CH: BO: Define Timer
+IntervalTimer my10Timer;                          // CH: BO: Define Timer
+IntervalTimer my2Timer;                           // PT: BO: Define Timer
 
-static CAN_message_t msg;
+#define     DEBUG_PORT    Serial                  // ALL: Debug Port
+#define     BT_CAR_PORT   Serial4                 // PT: BT for Arduino CAR
+#define     NEXTION_PORT  Serial5                 // PT: CH: BO: Nextion Display
 
-const byte ledDisp = 4;
+boolean gDebug          = true;                   // ALL: show Debug
 
-// 0 Powertrain
-int CANBUSSPEED0  = 500000;
-// 1 Chassis
-int CANBUSSPEED1  = 500000;
-// 2 Body
-int CANBUSSPEED2  = 500000;
-// 3 OBD2
-int CANBUSSPEED3  = 500000;
+static CAN_message_t out_msg;                     // ALL: Used for outgoing msgs
 
-byte nextPage = 0;
-int dialCount = 0;
-boolean dialButton = 0;
-String curDialDir = "   ";
-uint16_t potValue = 0;
-uint16_t potValue_old = 0;
+byte nextPage           = 0;                      // PT: CH: BO: Nextion Current Page
+const byte msgSpacing   = 200;                    // PT: CH: BO: Used for CAN propagation
 
-boolean b100Hz  = 0;
-boolean b20Hz   = 0;
-boolean b10Hz   = 0;
-boolean b2Hz    = 0;
+boolean b100Hz          = 0;                      // PT: CH: BO: Timer trigger
+boolean b20Hz           = 0;                      // PT: CH: BO: Timer trigger
+boolean b10Hz           = 0;                      // CH: BO: Timer trigger
+boolean b2Hz            = 0;                      // PT: BO: Timer trigger
 
-boolean curDialBit0 = 0;
-boolean curDialBit1 = 0;
-boolean preDialBit0 = 0;
-boolean preDialBit1 = 0;
-boolean curLightBit0 = 0;
-boolean curLightBit1 = 0;
-boolean preLightBit0 = 0;
-boolean preLightBit1 = 0;
-boolean curWiperFrBit0 = 0;
-boolean curWiperFrBit1 = 0;
-boolean preWiperFrBit0 = 0;
-boolean preWiperFrBit1 = 0;
+uint16_t potValue       = 0;                      // PT: Used for Potentiometer
+uint16_t potValue_old   = 0;                      // PT: Used for Potentiometer
 
-const byte msgSpacing = 200;
-int lightCount = -1;
-String curLightDir = "   ";
-int wiperFrCount = -1;
-String curWiperFrDir = "   ";
+boolean curDialBit0     = 0;                      // PT: Used for Rotary Encoder
+boolean curDialBit1     = 0;                      // PT: Used for Rotary Encoder
+boolean preDialBit0     = 0;                      // PT: Used for Rotary Encoder
+boolean preDialBit1     = 0;                      // PT: Used for Rotary Encoder
+int dialCount           = 0;                      // PT: Used for Rotary Encoder
+boolean dialButton      = 0;                      // PT: Used for Rotary Encoder
+String curDialDir       = "   ";                  // PT: Used for Rotary Encoder
 
-long lastCanMsg = 0;
+boolean curLightBit0    = 0;                      // CH: Used for Light Rotary Encoder
+boolean curLightBit1    = 0;                      // CH: Used for Light Rotary Encoder
+boolean preLightBit0    = 0;                      // CH: Used for Light Rotary Encoder
+boolean preLightBit1    = 0;                      // CH: Used for Light Rotary Encoder
+int lightCount          = -1;                     // CH: Used for Light Rotary Encoder
+String curLightDir      = "   ";                  // CH: Used for Light Rotary Encoder
+
+boolean curWiperFrBit0  = 0;                      // CH: Used for Wiper Rotary Encoder
+boolean curWiperFrBit1  = 0;                      // CH: Used for Wiper Rotary Encoder
+boolean preWiperFrBit0  = 0;                      // CH: Used for Wiper Rotary Encoder
+boolean preWiperFrBit1  = 0;                      // CH: Used for Wiper Rotary Encoder
+int wiperFrCount        = -1;                     // CH: Used for Wiper Rotary Encoder
+String curWiperFrDir    = "   ";                  // CH: Used for Wiper Rotary Encoder
+
+long lastCanMsg         = 0;                      // PT: CH: BO: Used to check last msg time
+
+boolean proofDebug      = true;                   // GW: to count msgs/s
+boolean firewallOpen0   = false;                  // GW: firewall for PT
+boolean firewallOpen1   = false;                  // GW: firewall for CH
+boolean firewallOpen2   = false;                  // GW: firewall for BO
+
+const unsigned long unlockId = 0x123;             // GW: CAN-ID to unlock the ODB2 firewall
+const unsigned long lockId   = 0x124;             // GW: CAN-ID to lock the ODB2 firewall
+byte unlockBuf[8]            = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07};
+                                                  // GW: data to lock/unlock byte 0 configures which ECU
+
+long unsigned int rxId;                           // GW: Used for MCP3 received msgs
+unsigned char len       = 0;                      // GW: Used for MCP3 received msgs
+unsigned char rxBuf[8];                           // GW: Used for MCP3 received msgs
+
+unsigned long cntStart  = 20000;                  // GW: Used to count msg/s
+unsigned int cnt0       = 0;                      // GW: Used to count msg/s
+unsigned int cnt1       = 0;                      // GW: Used to count msg/s
+unsigned int cnt2       = 0;                      // GW: Used to count msg/s
+unsigned int cnt30      = 0;                      // GW: Used to count msg/s
+unsigned int cnt31      = 0;                      // GW: Used to count msg/s
+unsigned int cnt32      = 0;                      // GW: Used to count msg/s
 
 // Powertrain
 // 100Hz
@@ -243,7 +254,7 @@ struct ECU_DATA {
 //**************************************************
 
 void b100Set() {
-  b100Hz = 1;
+  b100Hz = true;
 }
 
 //**************************************************
@@ -251,7 +262,7 @@ void b100Set() {
 //**************************************************
 
 void b20Set() {
-  b20Hz = 1;
+  b20Hz = true;
 }
 
 //**************************************************
@@ -259,7 +270,7 @@ void b20Set() {
 //**************************************************
 
 void b10Set() {
-  b10Hz = 1;
+  b10Hz = true;
 }
 
 //**************************************************
@@ -267,7 +278,7 @@ void b10Set() {
 //**************************************************
 
 void b2Set() {
-  b2Hz = 1;
+  b2Hz = true;
 }
 
 //**************************************************
@@ -277,100 +288,120 @@ void b2Set() {
 void can100Hz() {
   if (ecuNumber==0) {
     //noInterrupts();
-    msg.id = brakeOutputIndMSG;
-    msg.len = 8;
-    msg.buf[0] = ((ecu_data.brakeValueRAW >> 8) & 0xFF);
-    msg.buf[1] = ((ecu_data.brakeValueRAW >> 0) & 0xFF);
-    msg.buf[2] = 0x0;
-    msg.buf[3] = 0x0;
-    Can0.write(msg);
+    out_msg.id = brakeOutputIndMSG;
+    out_msg.len = 8;
+    out_msg.buf[0] = ((ecu_data.brakeValueRAW >> 8) & 0xFF);
+    out_msg.buf[1] = ((ecu_data.brakeValueRAW >> 0) & 0xFF);
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = throttlePositionMSG;
-    msg.buf[0] = ((ecu_data.acceleratorValueRAW >> 8) & 0xFF);
-    msg.buf[1] = ((ecu_data.acceleratorValueRAW >> 0) & 0xFF);
-    msg.buf[2] = 0x0;
-    msg.buf[3] = 0x0;
-    Can0.write(msg);
+    out_msg.id = throttlePositionMSG;
+    out_msg.buf[0] = ((ecu_data.acceleratorValueRAW >> 8) & 0xFF);
+    out_msg.buf[1] = ((ecu_data.acceleratorValueRAW >> 0) & 0xFF);
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = engineRpmMSG;
-    msg.buf[0] = ((ecu_data.engineRpmRAW >> 8) & 0xFF);
-    msg.buf[1] = ((ecu_data.engineRpmRAW >> 0) & 0xFF);
-    msg.buf[2] = ((ecu_data.speedKphRAW >> 8) & 0xFF);
-    msg.buf[3] = ((ecu_data.speedKphRAW >> 0) & 0xFF);
-    Can0.write(msg);
+    out_msg.id = engineRpmMSG;
+    out_msg.buf[0] = ((ecu_data.engineRpmRAW >> 8) & 0xFF);
+    out_msg.buf[1] = ((ecu_data.engineRpmRAW >> 0) & 0xFF);
+    out_msg.buf[2] = ((ecu_data.speedKphRAW >> 8) & 0xFF);
+    out_msg.buf[3] = ((ecu_data.speedKphRAW >> 0) & 0xFF);
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = powerSteeringOutIndMSG;
-    msg.buf[0] = ((ecu_data.steeringValueRAW >> 8) & 0xFF);
-    msg.buf[1] = ((ecu_data.steeringValueRAW >> 0) & 0xFF);
-    msg.buf[2] = 0x0;
-    msg.buf[3] = 0x0;
-    Can0.write(msg);
+    out_msg.id = powerSteeringOutIndMSG;
+    out_msg.buf[0] = ((ecu_data.steeringValueRAW >> 8) & 0xFF);
+    out_msg.buf[1] = ((ecu_data.steeringValueRAW >> 0) & 0xFF);
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = shiftPositionMSG;
-    msg.buf[0] = ecu_data.shiftPositionRAW;
-    msg.buf[1] = 0x0;
-    msg.buf[2] = 0x0;
-    msg.buf[3] = 0x0;
-    Can0.write(msg);
-    b100Hz = 0;
-    digitalWrite(ledDisp,!digitalRead(ledDisp));
+    out_msg.id = shiftPositionMSG;
+    out_msg.buf[0] = ecu_data.shiftPositionRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
+    b100Hz = false;
+    digitalWrite(NEO_PIN,!digitalRead(NEO_PIN));
     //interrupts();
   } else if (ecuNumber==1) {
     //noInterrupts();
-    msg.id = brakeOperationMSG;
-    msg.len = 8;
-    msg.buf[0] = ((ecu_data.brakeValueRAW >> 8) & 0xFF);
-    msg.buf[1] = ((ecu_data.brakeValueRAW >> 0) & 0xFF);
-    Can0.write(msg);
+    out_msg.id = brakeOperationMSG;
+    out_msg.len = 8;
+    out_msg.buf[0] = ((ecu_data.brakeValueRAW >> 8) & 0xFF);
+    out_msg.buf[1] = ((ecu_data.brakeValueRAW >> 0) & 0xFF);
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = accelerationOperationMSG;
-    msg.buf[0] = ((ecu_data.acceleratorValueRAW >> 8) & 0xFF);
-    msg.buf[1] = ((ecu_data.acceleratorValueRAW >> 0) & 0xFF);
-    Can0.write(msg);
+    out_msg.id = accelerationOperationMSG;
+    out_msg.buf[0] = ((ecu_data.acceleratorValueRAW >> 8) & 0xFF);
+    out_msg.buf[1] = ((ecu_data.acceleratorValueRAW >> 0) & 0xFF);
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = steeringWheelPosMSG;
-    msg.buf[0] = ((ecu_data.steeringValueRAW >> 8) & 0xFF);
-    msg.buf[1] = ((ecu_data.steeringValueRAW >> 0) & 0xFF);
-    Can0.write(msg);
+    out_msg.id = steeringWheelPosMSG;
+    out_msg.buf[0] = ((ecu_data.steeringValueRAW >> 8) & 0xFF);
+    out_msg.buf[1] = ((ecu_data.steeringValueRAW >> 0) & 0xFF);
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = shiftPositionSwitchMSG;
-    msg.buf[0] = ecu_data.shiftValueRAW;
-    msg.buf[1] = 0x0;
-    Can0.write(msg);
+    out_msg.id = shiftPositionSwitchMSG;
+    out_msg.buf[0] = ecu_data.shiftValueRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = engineStartMSG;
-    msg.buf[0] = ecu_data.engineValueRAW;
-    msg.buf[1] = 0x0;
-    Can0.write(msg);
+    out_msg.id = engineStartMSG;
+    out_msg.buf[0] = ecu_data.engineValueRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = turnSwitchMSG;
-    msg.buf[0] = ecu_data.turnSwitchValueRAW;
-    msg.buf[1] = 0x0;
-    Can0.write(msg);
+    out_msg.id = turnSwitchMSG;
+    out_msg.buf[0] = ecu_data.turnSwitchValueRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = hornSwitchMSG;
-    msg.buf[0] = ecu_data.hornValueRAW;
-    msg.buf[1] = 0x0;
-    Can0.write(msg);
-    b100Hz = 0;
-    digitalWrite(ledDisp,!digitalRead(ledDisp));
+    out_msg.id = hornSwitchMSG;
+    out_msg.buf[0] = ecu_data.hornValueRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
+    b100Hz = false;
+    digitalWrite(NEO_PIN,!digitalRead(NEO_PIN));
     //interrupts();
   } else if (ecuNumber==2) {
     //noInterrupts();
-    msg.id = turnSignalIndicatorMSG;
-    msg.len = 8;
-    msg.buf[0] = ecu_data.turnSignalIndicatorRAW;
-    Can0.write(msg);
+    out_msg.id = turnSignalIndicatorMSG;
+    out_msg.len = 8;
+    out_msg.buf[0] = ecu_data.turnSignalIndicatorRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = hornOperationMSG;
-    msg.buf[0] = ecu_data.hornValueRAW;
-    Can0.write(msg);
+    out_msg.id = hornOperationMSG;
+    out_msg.buf[0] = ecu_data.hornValueRAW;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = airbagActivationMSG;
-    msg.buf[0] = 0x0;
-    Can0.write(msg);
-    b100Hz = 0;
-    digitalWrite(ledDisp,!digitalRead(ledDisp));
+    out_msg.id = airbagActivationMSG;
+    out_msg.buf[0] = 0x0;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
+    b100Hz = false;
+    digitalWrite(NEO_PIN,!digitalRead(NEO_PIN));
     //interrupts();
   }
 } // can100Hz
@@ -382,94 +413,102 @@ void can100Hz() {
 void can20Hz() {
   if (ecuNumber==0) {
     //noInterrupts();
-    msg.id = brakeOilIndMSG;
-    msg.len = 8;
-    msg.buf[0] = 0xff;
-    msg.buf[1] = 0x0;
-    msg.buf[2] = 0x0;
-    msg.buf[3] = 0x0;
-    Can0.write(msg);
+    out_msg.id = brakeOilIndMSG;
+    out_msg.len = 8;
+    out_msg.buf[0] = 0xff;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = absBrakeOperationMSG;
-    msg.buf[0] = 0x0;
-    msg.buf[1] = 0x0;
-    msg.buf[2] = 0x0;
-    msg.buf[3] = 0x0;
-    Can0.write(msg);
+    out_msg.id = absBrakeOperationMSG;
+    out_msg.buf[0] = 0x0;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = throttleAdjustmentMSG;
-    msg.buf[0] = 0x0;
-    msg.buf[1] = 0x0;
-    msg.buf[2] = 0x0;
-    msg.buf[3] = 0x0;
-    Can0.write(msg);
+    out_msg.id = throttleAdjustmentMSG;
+    out_msg.buf[0] = 0x0;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = engineCoolantTempMSG;
-    //msg.len = 8;
-    msg.buf[0] = ecu_data.engineCoolantTempRAW;
-    msg.buf[1] = 0x0;
-    msg.buf[2] = 0x0;
-    msg.buf[3] = 0x0;
-    Can0.write(msg);
+    out_msg.id = engineCoolantTempMSG;
+    out_msg.buf[0] = ecu_data.engineCoolantTempRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = engineMalfunctionMSG;
-    msg.buf[0] = ecu_data.engineMalfunctionRAW;
-    msg.buf[1] = 0x0;
-    msg.buf[2] = 0x0;
-    msg.buf[3] = 0x0;
-    Can0.write(msg);
+    out_msg.id = engineMalfunctionMSG;
+    out_msg.buf[0] = ecu_data.engineMalfunctionRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = powerSteeringMalfMSG;
-    msg.buf[0] = 0x0;
-    msg.buf[1] = 0x0;
-    msg.buf[2] = 0x0;
-    msg.buf[3] = 0x0;
-    Can0.write(msg);
+    out_msg.id = powerSteeringMalfMSG;
+    out_msg.buf[0] = 0x0;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = engineStatusMSG;
-    msg.buf[0] = ecu_data.engineStatusRAW;
-    msg.buf[1] = 0x0;
-    msg.buf[2] = 0x0;
-    msg.buf[3] = 0x0;
-    Can0.write(msg);
+    out_msg.id = engineStatusMSG;
+    out_msg.buf[0] = ecu_data.engineStatusRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = parkingBrakeStatusMSG;
-    msg.buf[0] = ecu_data.parkingBrakeStatusRAW;
-    msg.buf[1] = 0x0;
-    msg.buf[2] = 0x0;
-    msg.buf[3] = 0x0;
-    Can0.write(msg);
-    b20Hz = 0;
-    digitalWrite(ledDisp,!digitalRead(ledDisp));
+    out_msg.id = parkingBrakeStatusMSG;
+    out_msg.buf[0] = ecu_data.parkingBrakeStatusRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
+    b20Hz = false;
+    digitalWrite(NEO_PIN,!digitalRead(NEO_PIN));
     //interrupts();
   } else if (ecuNumber==1) {
     //noInterrupts();
-    msg.id = lightSwitchMSG;
-    msg.len = 8;
-    msg.buf[0] = ecu_data.lightSwValueRAW;
-    msg.buf[1] = 0x0;
-    Can0.write(msg);
+    out_msg.id = lightSwitchMSG;
+    out_msg.len = 8;
+    out_msg.buf[0] = ecu_data.lightSwValueRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = lightFlashMSG;
-    msg.buf[0] = ecu_data.lightFlValueRAW;
-    msg.buf[1] = 0x0;
-    Can0.write(msg);
+    out_msg.id = lightFlashMSG;
+    out_msg.buf[0] = ecu_data.lightFlValueRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = parkingBrakeMSG;
-    msg.buf[0] = ecu_data.parkingValueRAW;
-    msg.buf[1] = 0x0;
-    Can0.write(msg);
-    b20Hz = 0;
-    digitalWrite(ledDisp,!digitalRead(ledDisp));
+    out_msg.id = parkingBrakeMSG;
+    out_msg.buf[0] = ecu_data.parkingValueRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
+    b20Hz = false;
+    digitalWrite(NEO_PIN,!digitalRead(NEO_PIN));
     //interrupts();
   } else if (ecuNumber==2) {
     //noInterrupts();
-    msg.id = lightIndicatorMSG;
-    msg.len = 8;
-    msg.buf[0] = ecu_data.lightIndicatorRAW;
-    Can0.write(msg);
-    b20Hz = 0;
-    digitalWrite(ledDisp,!digitalRead(ledDisp));
+    out_msg.id = lightIndicatorMSG;
+    out_msg.len = 8;
+    out_msg.buf[0] = ecu_data.lightIndicatorRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
+    b20Hz = false;
+    digitalWrite(NEO_PIN,!digitalRead(NEO_PIN));
     //interrupts();
   }
 } // can20Hz
@@ -481,78 +520,107 @@ void can20Hz() {
 void can10Hz() {
   if (ecuNumber==1) {
     //noInterrupts();
-    msg.id = wiperSwitchFrontMSG;
-    msg.len = 8;
-    msg.buf[0] = ecu_data.wiperFSwValueRAW;
-    msg.buf[1] = 0x0;
-    Can0.write(msg);
+    out_msg.id = wiperSwitchFrontMSG;
+    out_msg.len = 8;
+    out_msg.buf[0] = ecu_data.wiperFSwValueRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = wiperSwitchRearMSG;
-    msg.buf[0] = ecu_data.wiperRSwValueRAW;
-    msg.buf[1] = 0x0;
-    Can0.write(msg);
+    out_msg.id = wiperSwitchRearMSG;
+    out_msg.buf[0] = ecu_data.wiperRSwValueRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = doorLockUnlockMSG;
-    msg.buf[0] = ecu_data.doorLockValueRAW;
-    msg.buf[1] = 0x0;
-    Can0.write(msg);
+    out_msg.id = doorLockUnlockMSG;
+    out_msg.buf[0] = ecu_data.doorLockValueRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = lDoorSwWindowMSG;
-    msg.buf[0] = ecu_data.lDoorSwValueRAW;
-    msg.buf[1] = 0x0;
-    Can0.write(msg);
+    out_msg.id = lDoorSwWindowMSG;
+    out_msg.buf[0] = ecu_data.lDoorSwValueRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = rDoorSwWindowMSG;
-    msg.buf[0] = ecu_data.rDoorSwValueRAW;
-    msg.buf[1] = 0x0;
-    Can0.write(msg);
-    b10Hz = 0;
-    digitalWrite(ledDisp,!digitalRead(ledDisp));
+    out_msg.id = rDoorSwWindowMSG;
+    out_msg.buf[0] = ecu_data.rDoorSwValueRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
+    b10Hz = false;
+    digitalWrite(NEO_PIN,!digitalRead(NEO_PIN));
     //interrupts();
   } else if (ecuNumber==2) {
     //noInterrupts();
-    msg.id = frontWiperStatusMSG;
-    msg.len = 8;
-    msg.buf[0] = ecu_data.wiperFSwValueRAW;
-    Can0.write(msg);
+    out_msg.id = frontWiperStatusMSG;
+    out_msg.len = 8;
+    out_msg.buf[0] = ecu_data.wiperFSwValueRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = rearWiperStatusMSG;
-    msg.buf[0] = ecu_data.wiperRSwValueRAW;
-    Can0.write(msg);
+    out_msg.id = rearWiperStatusMSG;
+    out_msg.buf[0] = ecu_data.wiperRSwValueRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = doorLockStatusMSG;
-    msg.buf[0] = ecu_data.doorLockStatusRAW;
-    Can0.write(msg);
+    out_msg.id = doorLockStatusMSG;
+    out_msg.buf[0] = ecu_data.doorLockStatusRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = lDoorPositionMSG;
-    //msg.len = 2;
+    out_msg.id = lDoorPositionMSG;
     if (ecu_data.lDoorLimitRAW==0) {
-      msg.buf[0] = 0x00;
-      msg.buf[1] = 0x01;
+      out_msg.buf[0] = 0x0;
+      out_msg.buf[1] = 0x01;
+      out_msg.buf[2] = 0x0;
+      out_msg.buf[3] = 0x0;
     } else if (ecu_data.lDoorLimitRAW==100) {
-      msg.buf[0] = 0x64;
-      msg.buf[1] = 0x02;
+      out_msg.buf[0] = 0x64;
+      out_msg.buf[1] = 0x02;
+      out_msg.buf[2] = 0x0;
+      out_msg.buf[3] = 0x0;
     } else {
-      msg.buf[0] = ecu_data.lDoorLimitRAW;
-      msg.buf[1] = 0x00;
+      out_msg.buf[0] = ecu_data.lDoorLimitRAW;
+      out_msg.buf[1] = 0x0;
+      out_msg.buf[2] = 0x0;
+      out_msg.buf[3] = 0x0;
     }
-    Can0.write(msg);
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = rDoorPositionMSG;
-    //msg.len = 2;
+    out_msg.id = rDoorPositionMSG;
     if (ecu_data.rDoorLimitRAW==0) {
-      msg.buf[0] = 0x00;
-      msg.buf[1] = 0x01;
+      out_msg.buf[0] = 0x00;
+      out_msg.buf[1] = 0x01;
+      out_msg.buf[2] = 0x0;
+      out_msg.buf[3] = 0x0;
     } else if (ecu_data.rDoorLimitRAW==100) {
-      msg.buf[0] = 0x64;
-      msg.buf[1] = 0x02;
+      out_msg.buf[0] = 0x64;
+      out_msg.buf[1] = 0x02;
+      out_msg.buf[2] = 0x0;
+      out_msg.buf[3] = 0x0;
     } else {
-      msg.buf[0] = ecu_data.rDoorLimitRAW;
-      msg.buf[1] = 0x00;
+      out_msg.buf[0] = ecu_data.rDoorLimitRAW;
+      out_msg.buf[1] = 0x00;
+      out_msg.buf[2] = 0x0;
+      out_msg.buf[3] = 0x0;
     }
-    Can0.write(msg);
-    b10Hz = 0;
-    digitalWrite(ledDisp,!digitalRead(ledDisp));
+    Can0.write(out_msg);
+    b10Hz = false;
+    digitalWrite(NEO_PIN,!digitalRead(NEO_PIN));
     //interrupts();
   }
 } // can10Hz()
@@ -564,60 +632,75 @@ void can10Hz() {
 void can2Hz() {
   if (ecuNumber==0) {
     //noInterrupts();
-    msg.id = fuelAmountMSG;
-    msg.len = 8;
-    msg.buf[0] = ecu_data.fuelAmountRAW;
-    msg.buf[1] = 0x0;
-    msg.buf[2] = 0x0;
-    msg.buf[3] = 0x0;
-    Can0.write(msg);
+    out_msg.id = fuelAmountMSG;
+    out_msg.len = 8;
+    out_msg.buf[0] = ecu_data.fuelAmountRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = batteryWarningMSG;
-    msg.buf[0] = !ecu_data.engineStatusRAW;
-    msg.buf[1] = 0x0;
-    msg.buf[2] = 0x0;
-    msg.buf[3] = 0x0;
-    Can0.write(msg);
+    out_msg.id = batteryWarningMSG;
+    out_msg.buf[0] = !ecu_data.engineStatusRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = ecoDrivingJudgementMSG;
-    msg.buf[0] = 0x0;
-    msg.buf[1] = 0x0;
-    msg.buf[2] = 0x0;
-    msg.buf[3] = 0x0;
-    Can0.write(msg);
-    b2Hz = 0;
-    digitalWrite(ledDisp,!digitalRead(ledDisp));
+    out_msg.id = ecoDrivingJudgementMSG;
+    out_msg.buf[0] = 0x0;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
+    b2Hz = false;
+    digitalWrite(NEO_PIN,!digitalRead(NEO_PIN));
     //interrupts();
   } else if (ecuNumber==2) {
     //noInterrupts();
-    msg.id = doorDriveUnitMalfuncMSG;
-    msg.len = 8;
-    msg.buf[0] = 0x0;
-    Can0.write(msg);
+    out_msg.id = doorDriveUnitMalfuncMSG;
+    out_msg.len = 8;
+    out_msg.buf[0] = 0x0;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = seatBeltSensorMSG;
-    msg.buf[0] = 0x00;
-    Can0.write(msg);
+    out_msg.id = seatBeltSensorMSG;
+    out_msg.buf[0] = 0x0;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = seatBeltAlarmMSG;
-    msg.buf[0] = 0x0;
-    Can0.write(msg);
+    out_msg.id = seatBeltAlarmMSG;
+    out_msg.buf[0] = 0x0;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = bonnetOpenSwitchMSG;
-    msg.buf[0] = ecu_data.bonnetOpenSwitchRAW;
-    Can0.write(msg);
+    out_msg.id = bonnetOpenSwitchMSG;
+    out_msg.buf[0] = ecu_data.bonnetOpenSwitchRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
-    msg.id = trunkOpenSwitchMSG;
-    msg.buf[0] = ecu_data.trunkOpenSwitchRAW;
-    Can0.write(msg);
-    b2Hz = 0;
-    digitalWrite(ledDisp,!digitalRead(ledDisp));
+    out_msg.id = trunkOpenSwitchMSG;
+    out_msg.buf[0] = ecu_data.trunkOpenSwitchRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
+    Can0.write(out_msg);
+    b2Hz = false;
+    digitalWrite(NEO_PIN,!digitalRead(NEO_PIN));
     //interrupts();
   }
 } // can2Hz()
 
 //**************************************************
-// canSniff()
+// canSniff() used by PT, CH, BO
 //**************************************************
 
 void canSniff(const CAN_message_t &msg) {
@@ -995,7 +1078,7 @@ void canSniff0(const CAN_message_t &msg0) {
       break;
   }
   long millis0 = millis();
-  if((millis0>20000)&(millis0<21001)&(proofDebug)) {
+  if((millis0>cntStart)&(millis0<(cntStart+1001))&(proofDebug)) {
     cnt0++;
   }
   if (firewallOpen0) {
@@ -1005,13 +1088,13 @@ void canSniff0(const CAN_message_t &msg0) {
     //msg0.buf[5]=0xff;
     //byte sndStat = CANMCP3.sendMsgBuf(msg0.id,0,msg0.len,msg0.buf);
     byte sndStat = CANMCP3MINTY.sendTX0(msg0.id,msg0.len,msg0.buf,1);
-    if((millis0>20000)&(millis0<21001)&(proofDebug)&(sndStat==CAN_OK)) {
+    if((millis0>cntStart)&(millis0<(cntStart+1001))&(proofDebug)&(sndStat==CAN_OK)) {
       cnt30++;
     }
   }
   pixels.setPixelColor(0, pixels.Color(150,0,0));
   pixels.show();
-  //digitalWrite(ledDisp,!digitalRead(ledDisp));
+  //digitalWrite(NEO_PIN,!digitalRead(NEO_PIN));
   //Serial.print("MB "); Serial.print(msg.mb);
   //Serial.print("  OVERRUN: "); Serial.print(msg.flags.overrun);
   //Serial.print("  LEN: "); Serial.print(msg.len);
@@ -1108,7 +1191,7 @@ void canSniff1(const CAN_message_t &msg1) {
       break;
   }
   long millis1 = millis();
-  if((millis1>20000)&(millis1<21001)&(proofDebug)) {
+  if((millis1>cntStart)&(millis1<(cntStart+1001))&(proofDebug)) {
     cnt1++;
   }
   if (firewallOpen1) {
@@ -1118,13 +1201,13 @@ void canSniff1(const CAN_message_t &msg1) {
     //msg1.buf[6]=0xff;
     //byte sndStat = CANMCP3.sendMsgBuf(msg1.id,0,msg1.len,msg1.buf);
     byte sndStat = CANMCP3MINTY.sendTX0(msg1.id,msg1.len,msg1.buf,1);
-    if((millis1>20000)&(millis1<21001)&(proofDebug)&(sndStat==CAN_OK)) {
+    if((millis1>cntStart)&(millis1<(cntStart+1001))&(proofDebug)&(sndStat==CAN_OK)) {
       cnt31++;
     }
   }
   pixels.setPixelColor(0, pixels.Color(0,150,0));
   pixels.show();
-  //digitalWrite(ledDisp,!digitalRead(ledDisp));
+  //digitalWrite(NEO_PIN,!digitalRead(NEO_PIN));
   //Serial.print("MB "); Serial.print(msg.mb);
   //Serial.print("  OVERRUN: "); Serial.print(msg.flags.overrun);
   //Serial.print("  LEN: "); Serial.print(msg.len);
@@ -1229,7 +1312,7 @@ void canSniff2(const CAN_message_t &msg2) {
       break;
   }
   long millis2 = millis();
-  if((millis2>20000)&(millis2<21001)&(proofDebug)) {
+  if((millis2>cntStart)&(millis2<(cntStart+1001))&(proofDebug)) {
     cnt2++;
   }
   if (firewallOpen2) {
@@ -1239,13 +1322,13 @@ void canSniff2(const CAN_message_t &msg2) {
     //msg2.buf[7]=0xff;
     //byte sndStat = CANMCP3.sendMsgBuf(msg2.id,0,msg2.len,msg2.buf);
     byte sndStat = CANMCP3MINTY.sendTX0(msg2.id,msg2.len,msg2.buf,1);
-    if((millis2>20000)&(millis2<21001)&(proofDebug)&(sndStat==CAN_OK)) {
+    if((millis2>cntStart)&(millis2<(cntStart+1001))&(proofDebug)&(sndStat==CAN_OK)) {
       cnt32++;
     }
   }
   pixels.setPixelColor(0, pixels.Color(0,0,150));
   pixels.show();
-  //digitalWrite(ledDisp,!digitalRead(ledDisp));
+  //digitalWrite(NEO_PIN,!digitalRead(NEO_PIN));
   //Serial.print("MB "); Serial.print(msg.mb);
   //Serial.print("  OVERRUN: "); Serial.print(msg.flags.overrun);
   //Serial.print("  LEN: "); Serial.print(msg.len);
@@ -1265,7 +1348,7 @@ void canSniff2(const CAN_message_t &msg2) {
 
 void canSniff3() {
   int checkno = 0;
-  CAN_message_t msg;
+  CAN_message_t msg3;
   if(!digitalRead(CAN3_INT)) {
     CANMCP3.readMsgBuf(&rxId, &len, rxBuf);
     checkno = rxBuf[0];
@@ -1304,19 +1387,19 @@ void canSniff3() {
         break;
       case resetMSG:
         if((checkno&0x01)>>0) {
-          msg.id = resetMSG;
-          msg.len = 0;
-          Can0.write(msg);
+          msg3.id = resetMSG;
+          msg3.len = 0;
+          Can0.write(msg3);
         }
         if((checkno&0x02)>>1) {
-          msg.id = resetMSG;
-          msg.len = 0;
-          Can1.write(msg);
+          msg3.id = resetMSG;
+          msg3.len = 0;
+          Can1.write(msg3);
         }
         if((checkno&0x04)>>2) {
-          msg.id = resetMSG;
-          msg.len = 0;
-          Can2.write(msg);
+          msg3.id = resetMSG;
+          msg3.len = 0;
+          Can2.write(msg3);
         }
         if((checkno&0x08)>>3) {
           delayMicroseconds(500);
@@ -1336,7 +1419,9 @@ void canSniff3() {
 static void serialMenu() {
   int checkno = 0;
   static char cmdbuf[8];
-  CAN_message_t msg;
+  CAN_message_t reset_msg;
+  reset_msg.id = resetMSG;
+  reset_msg.len = 0x0;
   if (DEBUG_PORT.available()) {
     for (int i=0; i < 8; i++) {
       char ser = DEBUG_PORT.read();
@@ -1351,12 +1436,23 @@ static void serialMenu() {
           checkno = checkno - 'a' + 10;
         }
         switch (cmdbuf[0]) {
+          case 'c':     // restart msg counter
+            DEBUG_PORT.println(F("Restarting msg counter!"));
+            cnt0 = 0;
+            cnt1 = 0;
+            cnt2 = 0;
+            cnt30 = 0;
+            cnt31 = 0;
+            cnt32 = 0;
+            cntStart = millis();
+            break;
           case 'd':     // toggle DEBUG
             gDebug=!gDebug;
             break;
           case 'h':     // help
             DEBUG_PORT.println(F("HELP FUNCTIONS"));
             DEBUG_PORT.println();
+            DEBUG_PORT.println(F("c\tRestart msg counter"));
             DEBUG_PORT.println(F("f\tToggle All firewalls"));
             DEBUG_PORT.println(F("f1\tToggle PT  firewall"));
             DEBUG_PORT.println(F("f2\tToggle CH  firewall"));
@@ -1372,30 +1468,22 @@ static void serialMenu() {
             break;
           case 'r':     // reboot ECUs
             if (cmdbuf[1] == '\r') {
-                msg.id = resetMSG;
-                msg.len = 0x0;
-                Can0.write(msg);
-                delayMicroseconds(100);
-                Can1.write(msg);
-                delayMicroseconds(100);
-                Can2.write(msg);
-                delayMicroseconds(100);
+                Can0.write(reset_msg);
+                delayMicroseconds(250);
+                Can1.write(reset_msg);
+                delayMicroseconds(250);
+                Can2.write(reset_msg);
+                delayMicroseconds(250);
                 SCB_AIRCR = 0x05FA0004;
             } else {
               if ((checkno&0x1)>>0) {
-                msg.id = resetMSG;
-                msg.len = 0x0;
-                Can0.write(msg);
+                Can0.write(reset_msg);
               }
               if ((checkno&0x2)>>1) {
-                msg.id = resetMSG;
-                msg.len = 0x0;
-                Can1.write(msg);
+                Can1.write(reset_msg);
               }
               if ((checkno&0x4)>>2) {
-                msg.id = resetMSG;
-                msg.len = 0x0;
-                Can2.write(msg);
+                Can2.write(reset_msg);
               }
               if ((checkno&0x8)>>3) {
                 delayMicroseconds(250);
@@ -1684,11 +1772,39 @@ void btSend() {
 //**************************************************
 
 void setup() {
-  if (ecuNumber==0) {
-    // Setup Serial port
-    DEBUG_PORT.begin(500000);
-    // Setup Bluetooth CAR Serial port
-    BT_CAR_PORT.begin(9600);
+  // Setup Serial port
+  DEBUG_PORT.begin(500000);
+  pinMode(ECU_NUM_LO,INPUT_PULLUP);
+  pinMode(ECU_NUM_HI,INPUT_PULLUP);
+  while (millis()<500) {
+    // do nothing
+  }
+  ecuNumber = (digitalRead(ECU_NUM_HI) << 1);
+  ecuNumber += digitalRead(ECU_NUM_LO);
+  DEBUG_PORT.println();
+  DEBUG_PORT.print(F("**************************************************\r\n"));
+  DEBUG_PORT.print(F("*\tecuNumber:\t"));
+  if (ecuNumber<2) DEBUG_PORT.print(F("0"));
+  DEBUG_PORT.print(ecuNumber,BIN);
+  switch (ecuNumber) {
+    case 0:
+      DEBUG_PORT.print(F("\tPOWERTRAIN"));
+      break;
+    case 1:
+      DEBUG_PORT.print(F("\tCHASSIS   "));
+      break;
+    case 2:
+      DEBUG_PORT.print(F("\tBODY      "));
+      break;
+    case 3:
+      DEBUG_PORT.print(F("\tGATEWAY   "));
+      break;
+    default:
+      break;
+  }
+  DEBUG_PORT.print(F("\t *\r\n"));
+  DEBUG_PORT.print(F("**************************************************\r\n"));
+  if (ecuNumber<3) {
     // Setup Nextion and reset
     NEXTION_PORT.begin(250000);
     NEXTION_PORT.print(F("sleep=0")); //Wake Up Nextion
@@ -1701,7 +1817,14 @@ void setup() {
     NEXTION_PORT.print(F("thup=1"));  //allow wakeup from sleep touch
     endNextion();
     checkNext();
-    // Setup CAN
+  }
+   while (millis()<10000) {
+    // do nothing
+  }
+  if (ecuNumber==0) {
+    // Setup Bluetooth CAR Serial port
+    BT_CAR_PORT.begin(9600);
+    // Setup CAN 0
     Can0.begin();
     Can0.setBaudRate(CANBUSSPEED0);
     Can0.setClock(CLK_60MHz);
@@ -1710,15 +1833,12 @@ void setup() {
     Can0.enableFIFOInterrupt();
     Can0.onReceive(canSniff);
     //Can0.mailboxStatus();
-    while (millis()<10000) {
-      // do nothing
-    }
     // Setup Timer interupts
-    my100Timer.begin(b100Set, 10000);  // blinkLED to run every 0.01 seconds 150000 = 0.15s
-    my20Timer.begin (b20Set , 50000);  // blinkLED to run every 0.05 seconds 150000 = 0.15s
-    my2Timer.begin  (b2Set  ,500000);  // blinkLED to run every 0.50 seconds 150000 = 0.15s
+    my100Timer.begin(b100Set, 10000);  // Timer to run every 0.01 seconds
+    my20Timer.begin (b20Set , 50000);  // Timer to run every 0.05 seconds
+    my2Timer.begin  (b2Set  ,500000);  // Timer to run every 0.50 seconds
     // Setup led Pin
-    pinMode(ledDisp,OUTPUT);
+    pinMode(NEO_PIN,OUTPUT);
     // Setup MCP23017s
     mcpA.begin();
     for(int i=0;i<16;i++) {
@@ -1735,44 +1855,28 @@ void setup() {
     DEBUG_PORT.println(micros());
     can10Hz();
     DEBUG_PORT.println(micros());*/
+    // Setup initial values
     ecu_data.shiftPositionVal = 0x01;
     ecu_data.shiftPositionRAW = 0x01;
     ecu_data.engineStatusRAW = 0;
     ecu_data.engineCoolantTempRAW = 140;
     ecu_data.fuelAmountRAW = 43;
   } else if (ecuNumber==1) {
-    // Setup Serial port
-    DEBUG_PORT.begin(500000);
-    // Setup Nextion and reset
-    NEXTION_PORT.begin(250000);
-    NEXTION_PORT.print(F("sleep=0")); //Wake Up Nextion
-    endNextion();
-    delay(500);
-    NEXTION_PORT.print(F("dim=32"));  //Change brightness 0-100
-    endNextion();
-    NEXTION_PORT.print(F("page 0"));  //Page 0
-    endNextion();
-    NEXTION_PORT.print(F("thup=1"));  //allow wakeup from sleep
-    endNextion();
-    checkNext();
-    // Setup CAN
+    // Setup CAN 0
     Can0.begin();
-    Can0.setClock(CLK_60MHz);
     Can0.setBaudRate(CANBUSSPEED0);
+    Can0.setClock(CLK_60MHz);
     Can0.setMaxMB(16);
     Can0.enableFIFO();
     Can0.enableFIFOInterrupt();
     Can0.onReceive(canSniff);
     //Can0.mailboxStatus();
-    while (millis()<10000) {
-      // do nothing
-    }
     // Setup Timer interupts
-    my100Timer.begin(b100Set, 10000);  // blinkLED to run every 0.01 seconds 150000 = 0.15s
-    my20Timer.begin (b20Set , 50000);  // blinkLED to run every 0.05 seconds 150000 = 0.15s
-    my10Timer.begin (b10Set ,100000);  // blinkLED to run every 0.10 seconds 150000 = 0.15s
+    my100Timer.begin(b100Set, 10000);  // Timer to run every 0.01 seconds
+    my20Timer.begin (b20Set , 50000);  // Timer to run every 0.05 seconds
+    my10Timer.begin (b10Set ,100000);  // Timer to run every 0.10 seconds
     // Setup led Pin
-    pinMode(ledDisp,OUTPUT);
+    pinMode(NEO_PIN,OUTPUT);
     // Setup MCP23017s
     mcpA.begin();
     mcpB.begin(1);
@@ -1788,10 +1892,6 @@ void setup() {
     mcpB.digitalWrite(7,LOW);
     mcpB.digitalWrite(14,LOW);
     mcpB.digitalWrite(15,LOW);
-    preLightBit0 = mcpA.digitalRead(0);
-    preWiperFrBit0 = mcpA.digitalRead(8);
-    ecu_data.engineValueRAW = 0;
-    ecu_data.parkingValueRAW = 1;
     /*DEBUG_PORT.println(micros());
     can100Hz();
     DEBUG_PORT.println(micros());
@@ -1799,22 +1899,13 @@ void setup() {
     DEBUG_PORT.println(micros());
     can10Hz();
     DEBUG_PORT.println(micros());*/
+    // Setup initial values
+    preLightBit0 = mcpA.digitalRead(0);
+    preWiperFrBit0 = mcpA.digitalRead(8);
+    ecu_data.engineValueRAW = 0;
+    ecu_data.parkingValueRAW = 1;
   } else if (ecuNumber==2) {
-    // Setup Serial port
-    DEBUG_PORT.begin(500000);
-    // Setup Nextion and reset
-    NEXTION_PORT.begin(250000);
-    NEXTION_PORT.print(F("sleep=0")); //Wake Up Nextion
-    endNextion();
-    delay(500);
-    NEXTION_PORT.print(F("dim=32"));  //Change brightness 0-100
-    endNextion();
-    NEXTION_PORT.print(F("page 0"));  //Page 0
-    endNextion();
-    NEXTION_PORT.print(F("thup=1"));  //allow wakeup from sleep
-    endNextion();
-    checkNext();
-    // Setup CAN
+    // Setup CAN 0
     Can0.begin();
     Can0.setBaudRate(CANBUSSPEED0);
     Can0.setClock(CLK_60MHz);
@@ -1823,17 +1914,13 @@ void setup() {
     Can0.enableFIFOInterrupt();
     Can0.onReceive(canSniff);
     //Can0.mailboxStatus();
-    while (millis()<10000) {
-      // do nothing
-    }
     // Setup Timer interupts
-    my100Timer.begin(b100Set, 10000);  // blinkLED to run every 0.01 seconds 150000 = 0.15s
-    my20Timer.begin (b20Set , 50000);  // blinkLED to run every 0.05 seconds 150000 = 0.15s
-    my10Timer.begin (b10Set ,100000);  // blinkLED to run every 0.05 seconds 150000 = 0.15s
-    my2Timer.begin   (b2Set ,500000);  // blinkLED to run every 0.50 seconds 150000 = 0.15s
+    my100Timer.begin(b100Set, 10000);  // Timer to run every 0.01 seconds
+    my20Timer.begin (b20Set , 50000);  // Timer to run every 0.05 seconds
+    my10Timer.begin (b10Set ,100000);  // Timer to run every 0.10 seconds
+    my2Timer.begin   (b2Set ,500000);  // Timer to run every 0.50 seconds
     // Setup led Pin
-    pinMode(ledDisp,OUTPUT);
-    // Setup MCP23017s
+    pinMode(NEO_PIN,OUTPUT);
     /*DEBUG_PORT.println(micros());
     can100Hz();
     DEBUG_PORT.println(micros());
@@ -1845,8 +1932,6 @@ void setup() {
     // Setup NEOPIXELS
     pixels.begin();
     pixels.setBrightness(127);
-    // Setup SERIAL PORT
-    DEBUG_PORT.begin(500000);
     // Setup ON CHIP CAN
     Can0.begin();
     Can0.setBaudRate(CANBUSSPEED0);
@@ -1855,6 +1940,7 @@ void setup() {
     Can0.enableFIFO();
     Can0.enableFIFOInterrupt();
     Can0.onReceive(canSniff0);
+    //Can0.mailboxStatus();
     Can1.begin();
     Can1.setBaudRate(CANBUSSPEED1);
     Can1.setClock(CLK_60MHz);
@@ -1862,6 +1948,7 @@ void setup() {
     Can1.enableFIFO();
     Can1.enableFIFOInterrupt();
     Can1.onReceive(canSniff1);
+    //Can1.mailboxStatus();
     Can2.begin();
     Can2.setBaudRate(CANBUSSPEED2);
     Can2.setClock(CLK_60MHz);
@@ -1869,34 +1956,29 @@ void setup() {
     Can2.enableFIFO();
     Can2.enableFIFOInterrupt();
     Can2.onReceive(canSniff2);
-    //Can0.mailboxStatus();
-    //Can1.mailboxStatus();
     //Can2.mailboxStatus();
     // Setup MCP2515 CAN
     pinMode(CAN3_INT, INPUT);                     // Configuring pin for /INT input
-  #if MCPADDPINS
-    DEBUG_PORT.println("TXnBUF\t\tTRUE!");
+#if MCPADDPINS
+    DEBUG_PORT.print("*\tTXnBUF\t\tTRUE!\t\t\t *\r\n");
     pixels.setPixelColor(0, pixels.Color(0,255,0));
-  #else
+#else
     pixels.setPixelColor(0, pixels.Color(0,0,255));
-  #endif
+#endif
     pixels.show();
     if(CANMCP3.begin(MCP_ANY, CAN3_SPEED, MCP_8MHZ) == CAN_OK){
-      DEBUG_PORT.print(F("CAN3:\t"));
+      DEBUG_PORT.print(F("*\tCAN3:\t"));
       if (CAN3_SPEED == 12) {
         DEBUG_PORT.print(F("500kbps"));
       } else if (CAN3_SPEED == 9) {
         DEBUG_PORT.print(F("125kbps"));
       }
-      DEBUG_PORT.print(F("\tInit OK!\r\n"));
+      DEBUG_PORT.print(F("\tInit OK!        \t *\r\n"));
       CANMCP3.setMode(MCP_NORMAL);
     } else {
-      DEBUG_PORT.print(F("CAN3: Init Fail!!!\r\n"));
+      DEBUG_PORT.print(F("CAN3: Init Fail!!!\t *\r\n"));
     }
-    
-    while (millis()<10000) {
-      // do nothing
-    }
+    DEBUG_PORT.print(F("**************************************************\r\n"));
   }
 } // setup()
 
@@ -2052,13 +2134,13 @@ void loop() {
     potValue_old = potValue;
     updateCanValues();
   
-    if (b100Hz == 1) {
+    if (b100Hz) {
       can100Hz();
     }
-    if (b20Hz == 1) {
+    if (b20Hz) {
       can20Hz();
     }
-    if (b2Hz == 1) {
+    if (b2Hz) {
       can2Hz();
     }
     while (BT_CAR_PORT.available()) {
@@ -2088,7 +2170,11 @@ void loop() {
     ecu_data.mcpA = mcpAValue;
     ecu_data.mcpB = mcpBValue;
   
-    if((ecu_data.mcpA != ecu_data_old.mcpA) || (ecu_data.mcpB != ecu_data_old.mcpB) || (ecu_data.brakeValueRAW != ecu_data_old.brakeValueRAW) || (ecu_data.acceleratorValueRAW != ecu_data_old.acceleratorValueRAW) || (ecu_data.steeringValueRAW != ecu_data_old.steeringValueRAW)) {
+    if((ecu_data.mcpA != ecu_data_old.mcpA)
+      || (ecu_data.mcpB != ecu_data_old.mcpB)
+      || (ecu_data.brakeValueRAW != ecu_data_old.brakeValueRAW)
+      || (ecu_data.acceleratorValueRAW != ecu_data_old.acceleratorValueRAW)
+      || (ecu_data.steeringValueRAW != ecu_data_old.steeringValueRAW)) {
       ecu_data.shiftValueRAW = ((mcpAValue & 0x0018) >> 3);
       
       if (((mcpAValue & 0x4000) >> 14) == 1) {
@@ -2255,13 +2341,13 @@ void loop() {
     dispNext();
     updateCanValues();
   
-    if (b100Hz == 1) {
+    if (b100Hz) {
       can100Hz();
     }
-    if (b20Hz == 1) {
+    if (b20Hz) {
       can20Hz();
     }
-    if (b10Hz == 1) {
+    if (b10Hz) {
       can10Hz();
     }
   
@@ -2295,23 +2381,23 @@ void loop() {
     dispNext();
     updateCanValues();
   
-    if (b100Hz == 1) {
+    if (b100Hz) {
       can100Hz();
     }
-    if (b20Hz == 1) {
+    if (b20Hz) {
       can20Hz();
     }
-    if (b10Hz == 1) {
+    if (b10Hz) {
       can10Hz();
     }
-    if (b2Hz == 1) {
+    if (b2Hz) {
       can2Hz();
     }
   
     checkNext();
   } else if(ecuNumber==3) {
     serialMenu();
-    if ((millis()>21000)&(millis()<21005)&(proofDebug)) {
+    if ((millis()>(cntStart+1001))&(millis()<(cntStart+1005))&(proofDebug)) {
       DEBUG_PORT.print(F("CAN0:"));
       DEBUG_PORT.print(cnt0);
       DEBUG_PORT.print(F(" CAN1:"));
