@@ -392,6 +392,9 @@ void can100Hz() {
     delayMicroseconds(msgSpacing);
     out_msg.id = hornOperationMSG;
     out_msg.buf[0] = ecu_data.hornValueRAW;
+    out_msg.buf[1] = 0x0;
+    out_msg.buf[2] = 0x0;
+    out_msg.buf[3] = 0x0;
     Can0.write(out_msg);
     delayMicroseconds(msgSpacing);
     out_msg.id = airbagActivationMSG;
