@@ -128,13 +128,14 @@ INT8U MCP_CAN_MINTY::tx0RTS()
  sendTX0()
 **************************************************/
 
-INT8U MCP_CAN_MINTY::sendTX0(INT32U id, INT8U len, INT8U *data, bool fastMode)
+INT8U MCP_CAN_MINTY::sendTX0(const INT32U id, const INT8U len, const INT8U *data, const bool fastMode)
 {
   INT8U res;
   setupTX0Buf(id,len,data,fastMode);
   res = tx0RTS();
   return res;
 } // sendTX0()
+
 /**************************************************
  END FILE
 **************************************************/

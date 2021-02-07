@@ -1,4 +1,23 @@
 //**************************************************
+// nextion_setup
+//**************************************************
+
+void nextion_setup() {
+  // Setup Nextion and reset
+  NEXTION_PORT.begin(250000);
+  NEXTION_PORT.print(F("sleep=0")); //Wake Up Nextion
+  endNextion();
+  delay(500);
+  NEXTION_PORT.print(F("dim=32"));  //Change brightness 0-100
+  endNextion();
+  NEXTION_PORT.print(F("page 0"));  //Page 0
+  endNextion();
+  NEXTION_PORT.print(F("thup=1"));  //allow wakeup from sleep touch
+  endNextion();
+  checkNext();
+}
+
+//**************************************************
 // endNextion
 //**************************************************
 

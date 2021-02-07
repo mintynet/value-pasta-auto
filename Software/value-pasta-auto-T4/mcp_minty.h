@@ -28,7 +28,7 @@ class MCP_CAN_MINTY
 
   public:
   MCP_CAN_MINTY(INT8U _CS, INT8U _TX0BUF);
-  byte sendTX0(INT32U id, INT8U len, INT8U *data, bool fastMode);
+  byte sendTX0(const INT32U id, const INT8U len, const INT8U *data, const bool fastMode);
 };
 
 #endif
