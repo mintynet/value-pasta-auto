@@ -7,6 +7,7 @@
 #include <Adafruit_MCP23017.h>                    // version 1.2.0
 #include <Adafruit_NeoPixel.h>                    // version 1.7.0
 #include <ResponsiveAnalogRead.h>                 // version 1.2.1
+#define             strVERSION  20210207          // date of upload
 
 // 0 Powertrain
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> Can0;   // ALL: CAN0 Bus
@@ -2271,6 +2272,12 @@ void get_ecuNumber() {
   ecuNumber = (digitalRead(ECU_NUM_HI) << 1);
   ecuNumber += digitalRead(ECU_NUM_LO);
   DEBUG_PORT.println();
+  DEBUG_PORT.print(F("**************************************************\r\n"));
+  DEBUG_PORT.print(F("** VERSION\t\t"));
+  DEBUG_PORT.print(strVERSION);
+  DEBUG_PORT.print(F("\t\t**\r\n"));
+  DEBUG_PORT.print(F("** https://github.com/mintynet/value-pasta-auto **\r\n"));
+  DEBUG_PORT.print(F("** https://mintynet.com                         **\r\n"));
   DEBUG_PORT.print(F("**************************************************\r\n"));
   DEBUG_PORT.print(F("*\tecuNumber:\t"));
   if (ecuNumber<2) DEBUG_PORT.print(F("0"));
