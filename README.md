@@ -37,7 +37,7 @@ The micro controller hardware used in #value-pasta-auto for the ECU's is the [Te
 |SN65HVD230DR CAN Transceiver|U1,U2,U4|3|
 |MCP2562FD-E/SN CAN-FD Transceiver|U3|1|
 |MCP2515-I/SO CAN Controller|U5|1|
-|Teensy 4.0|U6|1|
+|Teensy 4.0 (does require smt 2x5 header under the pcb,2x14 header & 1x5 header)|U6|1|
 |8MHz crystal|X1|1|
 |NUP2105L protection diode|D1,D2,D3,D4|4|
 |WS2812 RGB LED|LED1|1|
