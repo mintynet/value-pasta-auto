@@ -24,7 +24,25 @@ The micro controller hardware used in #value-pasta-auto for the ECU's is the [Te
 <br>[Original GERBER v1.0](/Hardware/teensy-ECU%20GERBER%20files%20v1.0.zip) has a fault with the WS2818b pinout current software just uses a single SMD LED and resistor instead.
 <br>[Updated GERBER v1.1](/Hardware/teensy-ECU%20GERBER%20files%20v1.1.zip) fixes the WS2818b pinout. Code would need modifying to support WS2812b.
 <br>[Updated GERBER v1.2](/Hardware/teensy-ECU%20GERBER%20files%20v1.2.zip) Adds the TXnRTS and RXnBF interrupt pins to schematic.
-## Todo Bill of materials
+## Bill of materials
+|Name|Designator|Quantity|
+|:---:|:---:|:---:|
+|BS-2-1 CR2032 Holder|B1|1|
+|0805 0.1uF Capacitor|C1,C101,C102,C103,C104,C105,C106|7|
+|0805 22pF Capacitor|C10,C11|2|
+|1206 10uF Capacitor|C107|1|
+|2pin 2.54 header & jumper|H1,H2,H3,H4|4|
+|MOLEX 12A-347290120|H5|1|
+|MOLEX 20A-347290200|H6|1|
+|SN65HVD230DR CAN Transceiver|U1,U2,U4|3|
+|MCP2562FD-E/SN CAN-FD Transceiver|U3|1|
+|MCP2515-I/SO CAN Controller|U5|1|
+|Teensy 4.0|U6|1|
+|8MHz crystal|X1|1|
+|NUP2105L protection diode|D1,D2,D3,D4|4|
+|WS2812 RGB LED|LED1|1|
+|0805 120 Resistor|R1,R2,R3,R4|4|
+|0805 10k Resistor|R5|1|
 
 ## I/O board
 The I/O board is used for the Powertrain and the Chassis ECU's. These are built using MCP23017 I/O expander, Powertrain ECU uses one MCP23017 and the Chassis ECU uses two MCP23017.
@@ -34,7 +52,19 @@ The I/O board is used for the Powertrain and the Chassis ECU's. These are built 
 ## I/O Board PCB Front
 ![I/O Board pcb front](/Hardware/io-board%20v1.0.png)
 <br>[Original GERBER v1.0](/Hardware/io-board%20GERBER%20files%20v1.0.zip)
-## Todo Bill of materials
+## Bill of materials
+|Name|Designator|Quantity|
+|:---:|:---:|:---:|
+|1206 10uF Capacitor|C1,C2,C3,C4|4|
+|0805 0.1uF Capacitor|C101,C102,C103,C104|4|
+|2x8pin 2.54 header|DIO-2,DIO-1,POWER|3|
+|4pin 2.54 header|NEXTION|1|
+|3pin 2.54 header|AN0,AN1,AN2,AN3|4|
+|2pin 2.54 header|H2|1|
+|MCP23017-E/SO IO expander|U1,U2|2|
+|MOLEX 20A-347290200|U3|1|
+|AMS1117-3.3 Voltage regulator|U4|1|
+|0805 4.7k Resistor|R1,R2|2|
 
 * Chassis ECU I/O board
 MCP23017 I/O Inputs unless otherwise stated
