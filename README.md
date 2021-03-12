@@ -112,7 +112,8 @@ MCP23017 I/O Inputs unless otherwise stated
 Powertrain, Body and Chassis ECU's have 3.5" NEXTION HMI [NEXTION](https://www.itead.cc/display/nextion.html) serial based screens. These are connected via the I/O board where it is present.
 
 ## Arduino Bluetooth CAR
-An Arduino based remote car can be controlled using #Value-Pasta-Auto
+An Arduino based remote car can be controlled using #Value-Pasta-Auto. Minor changes for the light were made to the code to control the lights from Value-Pasta-Auto
+[Link to Amazon Freenove 4WD Car Kit](https://www.amazon.co.uk/gp/product/B07YBQ73CH/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&th=1)
 
 ## CAN message detail per bus
 The following files show the CAN msgs that are used by #value-pasta-auto as per the original design docs from [pasta-auto bus definition](https://github.com/pasta-auto/PASTA1.0/blob/master/doc/PASTA1.0%20CAN-ID%20List%20v1.0E.pdf)
