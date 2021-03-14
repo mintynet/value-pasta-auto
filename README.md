@@ -26,7 +26,7 @@ The micro controller hardware used in #value-pasta-auto for the ECU's is the [Te
 <br>[Updated GERBER v1.2](/Hardware/teensy-ECU%20GERBER%20files%20v1.2.zip) Adds the TXnRTS and RXnBF interrupt pins to schematic.
 ## Bill of materials
 |Name|Designator|Quantity|
-|:---:|:---:|:---:|
+|:---|:---:|:---:|
 |BS-2-1 CR2032 Holder|B1|1|
 |0805 0.1uF Capacitor|C1,C101,C102,C103,C104,C105,C106|7|
 |0805 22pF Capacitor|C10,C11|2|
@@ -54,7 +54,7 @@ The I/O board is used for the Powertrain and the Chassis ECU's. These are built 
 <br>[Original GERBER v1.0](/Hardware/io-board%20GERBER%20files%20v1.0.zip)
 ## Bill of materials
 |Name|Designator|Quantity|
-|:---:|:---:|:---:|
+|:---|:---:|:---:|
 |1206 10uF Capacitor|C1,C2,C3,C4|4|
 |0805 0.1uF Capacitor|C101,C102,C103,C104|4|
 |2x8pin 2.54 header|DIO-2,DIO-1,POWER|3|
@@ -70,7 +70,7 @@ The I/O board is used for the Powertrain and the Chassis ECU's. These are built 
 MCP23017 I/O Inputs unless otherwise stated
 
 |Function port A MCP23017A|PIN|Function port B MCP23017A| |Function port A MCP23017B|PIN|Function port B MCP23017B|
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+|:---|:---:|---:|:---:|:---|:---:|---:|
 | Rotary Light CLK | 1 | Rotary Fr Wiper CLK | | Left DOOR window switch UP | 1 | Right DOOR window switch UP |
 | Rotary Light DT | 2 | Rotary Fr Wiper DT | | Left DOOR window switch DOWN | 1 | Right DOOR window switch DOWN |
 | Rotary Light PUSH | 3 | Rotary Fr Wiper PUSH | | Left DOOR lock switch | 3 | N/A |
@@ -91,7 +91,7 @@ MCP23017 I/O Inputs unless otherwise stated
 MCP23017 I/O Inputs unless otherwise stated
 
 |Function port A MCP23017A|PIN|Function port B MCP23017A| |Function port A MCP23017B|PIN|Function port B MCP23017B|
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+|:---|:---:|---:|:---:|:---|:---:|---:|
 | Rotary Control CLK | 1 | N/A | | Not Installed | 1 | Not Installed |
 | Rotary Control DT | 2 | N/A | | Not Installed | 2 | Not Installed |
 | Rotary Control PUSH | 3 | N/A | | Not Installed | 3 | Not Installed |
