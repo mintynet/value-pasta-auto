@@ -781,8 +781,7 @@ void checkNext() {
     {
       next_resp[next_index] = NEXTION_PORT.read();
       if(gDebug) {
-        if (next_resp[next_index] < 16) DEBUG_PORT.print(F("0"));
-        DEBUG_PORT.print(next_resp[next_index],HEX);
+        DEBUG_PORT.printf("%02x",next_resp[next_index]);
       }
       delayMicroseconds(50);
     }

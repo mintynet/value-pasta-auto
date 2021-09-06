@@ -7,7 +7,7 @@
 #include <Adafruit_MCP23017.h>                    // version 1.2.0
 #include <Adafruit_NeoPixel.h>                    // version 1.7.0
 #include <ResponsiveAnalogRead.h>                 // version 1.2.1
-#define             strVERSION  20210207          // date of upload
+#define             strVERSION  20210906          // date of upload
 
 // 0 Powertrain
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> Can0;   // ALL: CAN0 Bus
@@ -1830,10 +1830,8 @@ void powertrainECUdata() {
     if (gDebug) {
       DEBUG_PORT.println(F("************************************************************"));
       DEBUG_PORT.print(F("mcpAValue            : "));
-      if (mcpAValue < 0x10) DEBUG_PORT.print(F("0"));
-      if (mcpAValue < 0x100) DEBUG_PORT.print(F("0"));
-      if (mcpAValue < 0x1000) DEBUG_PORT.print(F("0"));
-      DEBUG_PORT.println(mcpAValue,HEX);
+      DEBUG_PORT.printf("%04x",mcpAValue);
+      DEBUG_PORT.println();
       DEBUG_PORT.println(F("************************************************************"));
       DEBUG_PORT.print(F("Dial button          : "));
       DEBUG_PORT.println(dialButton);
@@ -1986,37 +1984,27 @@ void chassisECUdata() {
     if (gDebug) {
       DEBUG_PORT.println(F("************************************************************"));
       DEBUG_PORT.print(F("mcpAValue          : "));
-      if (mcpAValue < 0x10) DEBUG_PORT.print(F("0"));
-      if (mcpAValue < 0x100) DEBUG_PORT.print(F("0"));
-      if (mcpAValue < 0x1000) DEBUG_PORT.print(F("0"));
-      DEBUG_PORT.println(mcpAValue,HEX);
+      DEBUG_PORT.printf("%04x",mcpAValue);
+      DEBUG_PORT.println();
       DEBUG_PORT.print(F("mcpBValue          : "));
-      if (mcpBValue < 0x10) DEBUG_PORT.print(F("0"));
-      if (mcpBValue < 0x100) DEBUG_PORT.print(F("0"));
-      if (mcpBValue < 0x1000) DEBUG_PORT.print(F("0"));
-      DEBUG_PORT.println(mcpBValue,HEX);
+      DEBUG_PORT.printf("%04x",mcpBValue);
+      DEBUG_PORT.println();
       DEBUG_PORT.println(F("************************************************************"));
       DEBUG_PORT.print(F("brake              : "));
-      if (ecu_data.brakeValueRAW < 10) DEBUG_PORT.print(F("0"));
-      if (ecu_data.brakeValueRAW < 100) DEBUG_PORT.print(F("0"));
-      if (ecu_data.brakeValueRAW < 1000) DEBUG_PORT.print(F("0"));
-      DEBUG_PORT.println(ecu_data.brakeValueRAW);
+      DEBUG_PORT.printf("%04x",ecu_data.brakeValueRAW);
+      DEBUG_PORT.println();
       DEBUG_PORT.print(F("accelerator        : "));
-      if (ecu_data.acceleratorValueRAW < 10) DEBUG_PORT.print(F("0"));
-      if (ecu_data.acceleratorValueRAW < 100) DEBUG_PORT.print(F("0"));
-      if (ecu_data.acceleratorValueRAW < 1000) DEBUG_PORT.print(F("0"));
-      DEBUG_PORT.println(ecu_data.acceleratorValueRAW);
+      DEBUG_PORT.printf("%04x",ecu_data.acceleratorValueRAW);
+      DEBUG_PORT.println();
       DEBUG_PORT.print(F("steering           : "));
       if (ecu_data.steeringValueRAW > 0) {
         DEBUG_PORT.print(F("+"));
-        if (ecu_data.steeringValueRAW < 10) DEBUG_PORT.print(F("0"));
-        if (ecu_data.steeringValueRAW < 100) DEBUG_PORT.print(F("0"));
       } else {
         DEBUG_PORT.print(F("-"));
-        if (ecu_data.steeringValueRAW > -10) DEBUG_PORT.print(F("0"));
-        if (ecu_data.steeringValueRAW > -100) DEBUG_PORT.print(F("0"));
       }
-      DEBUG_PORT.println(abs(ecu_data.steeringValueRAW));
+      //DEBUG_PORT.println(abs(ecu_data.steeringValueRAW));
+      DEBUG_PORT.printf("%03x",abs(ecu_data.steeringValueRAW));
+      DEBUG_PORT.println();
       DEBUG_PORT.println(F("************************************************************"));
       DEBUG_PORT.print(F("shiftValueRAW        : "));
       DEBUG_PORT.println(ecu_data.shiftValueRAW,HEX);
