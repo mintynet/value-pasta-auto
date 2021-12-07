@@ -96,6 +96,8 @@ void loop() {
         }
         break;
       case ACTION_RGB:
+        Serial.println(paramterCount);
+        Serial.println("POOP");
         if (paramterCount == 4) {
           stripDisplayMode = paramters[1];
           switch (stripDisplayMode)
