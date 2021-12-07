@@ -7,7 +7,7 @@
 #include <Adafruit_MCP23017.h>                    // version 1.2.0
 #include <Adafruit_NeoPixel.h>                    // version 1.7.0
 #include <ResponsiveAnalogRead.h>                 // version 1.2.1
-#define             strVERSION  20210906          // date of upload
+#define             strVERSION  20211207          // date of upload
 
 // 0 Powertrain
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> Can0;   // ALL: CAN0 Bus
@@ -1581,7 +1581,7 @@ void btSend() {
     BT_CAR_PORT.print(F("C#4#"));
     BT_CAR_PORT.print(lightNum);
     BT_CAR_PORT.print(F("#"));
-    DEBUG_PORT.print(F("C#4#"));
+    DEBUG_PORT.print(F("            C#4#"));
     DEBUG_PORT.print(lightNum);
     DEBUG_PORT.print(F("#"));
     if ((ecu_data.turnSwitchValueRAW & 0x04) >> 2) {
@@ -1867,6 +1867,12 @@ void powertrainECUdata() {
     ecu_data.speedKphRAW = tempSpeed;
     ecu_data.engineRpmRAW = (ecu_data.acceleratorValueRAW * 8124 / 1024);
     //Serial.println(ecu_data.engineRpmRAW);
+  }
+  if ((ecu_data.shiftPositionRAW == 1) | (ecu_data.shiftPositionRAW == 3)) {
+    if (dialCount > 5) {
+      ecu_data.speedKphRAW = 0;
+      ecu_data.engineRpmRAW = (ecu_data.acceleratorValueRAW * 8124 / 1024);
+    }
   }
   dispNext();
   ecu_data_old.mcpA = mcpAValue;

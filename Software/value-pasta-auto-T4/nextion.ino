@@ -233,7 +233,7 @@ void dispPowertrain () {
       //ecu_data.shiftPositionVal = "?";
     break; 
   }
-} //dispChassis()
+} //dispPowertrain()
 
 //**************************************************
 // dispSpeed
@@ -309,7 +309,7 @@ void dispTps (byte i) {
   NEXTION_PORT.print(F("nTPS.val="));
   NEXTION_PORT.print(i);
   endNextion();
-} //dispTps()
+} //dispTPS()
 
 //**************************************************
 // dispBrake
@@ -871,7 +871,7 @@ void checkNext() {
         ecu_data.rDoorLimitRAW = (next_resp[0]-20)*5;
     }
   }
-} //checkNext
+} //checkNext()
 
 //**************************************************
 // dispNext
