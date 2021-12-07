@@ -37,7 +37,7 @@ void setup() {
   Serial.begin(9600);
   servoSetup();
   while (!strip.begin());
-  strip.setAllLedsColor(0xFF0000);
+  strip.setAllLedsColor(0x000000);
 }
 
 void loop() {
@@ -96,8 +96,6 @@ void loop() {
         }
         break;
       case ACTION_RGB:
-        Serial.println(paramterCount);
-        Serial.println("POOP");
         if (paramterCount == 4) {
           stripDisplayMode = paramters[1];
           switch (stripDisplayMode)
@@ -146,7 +144,7 @@ void loop() {
   switch (stripDisplayMode)
   {
     case 0:
-      if (millis() - lastStripUpdateTime > stripDisplayDelay)
+/*      if (millis() - lastStripUpdateTime > stripDisplayDelay)
       {
         for (int i = 0; i < STRIP_LEDS_COUNT; i++) {
           strip.setLedColorData(i, strip.Wheel(colorPos + i * 25));
@@ -154,10 +152,10 @@ void loop() {
         strip.show();
         colorPos += colorStep;
         lastStripUpdateTime = millis();
-      }
+      }*/
       break;
     case 1:
-      if (millis() - lastStripUpdateTime > stripDisplayDelay)
+/*      if (millis() - lastStripUpdateTime > stripDisplayDelay)
       {
         strip.setLedColor(currentLedIndex, strip.Wheel(colorPos));
         currentLedIndex++;
@@ -167,10 +165,10 @@ void loop() {
           colorPos += colorStep; //
         }
         lastStripUpdateTime = millis();
-      }
+      }*/
       break;
     case 2:
-      colorPos = colorStep;
+/*      colorPos = colorStep;
       if (millis() - lastStripUpdateTime > stripDisplayDelay)
       {
         //static bool ledState = true;
@@ -184,16 +182,16 @@ void loop() {
         }
         ledState = !ledState;
         lastStripUpdateTime = millis();
-      }
+      }*/
       break;
     case 3:
-      if (lastColor[0] != paramters[2] || lastColor[1] != paramters[3] || lastColor[2] != paramters[4])
+/*      if (lastColor[0] != paramters[2] || lastColor[1] != paramters[3] || lastColor[2] != paramters[4])
       {
         strip.setAllLedsColor(paramters[2], paramters[3], paramters[4]);
         lastColor[0] = paramters[2];
         lastColor[1] = paramters[3];
         lastColor[2] = paramters[4];
-      }
+      }*/
       break;
     case 4:
       //strip.setAllLedsColor(0x00);
