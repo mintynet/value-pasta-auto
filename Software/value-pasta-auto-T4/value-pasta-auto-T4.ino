@@ -7,7 +7,7 @@
 #include <Adafruit_MCP23017.h>                    // version 1.2.0
 #include <Adafruit_NeoPixel.h>                    // version 1.7.0
 #include <ResponsiveAnalogRead.h>                 // version 1.2.1
-#define             strVERSION  20211207          // date of upload
+#define             strVERSION  20211209          // date of upload
 
 // 0 Powertrain
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> Can0;   // ALL: CAN0 Bus
@@ -1355,7 +1355,7 @@ void canSniff3() {
 } // canSniff3()
 
 //**************************************************
-// serialMenu()
+// canSniff3()
 //**************************************************
 
 static void serialMenu() {
@@ -1433,6 +1433,7 @@ static void serialMenu() {
               DEBUG_PORT.println(F("r\tReboot ECU"));
             }
             DEBUG_PORT.println(F("d\tToggle Debug"));           
+            DEBUG_PORT.println(F("u\tCurrent Millis()"));           
             break;
           case 'r':     // reboot ECUs
             if (ecuNumber<3) {
@@ -1493,6 +1494,10 @@ static void serialMenu() {
             } else {
               DEBUG_PORT.println(F("Firewall 2\tClosed"));
             }
+            break;
+          case 'u':     // show millis
+            DEBUG_PORT.print(F("Millis: "));
+            DEBUG_PORT.println(millis());
             break;
           default:
             break;
@@ -1581,7 +1586,7 @@ void btSend() {
     BT_CAR_PORT.print(F("C#4#"));
     BT_CAR_PORT.print(lightNum);
     BT_CAR_PORT.print(F("#"));
-    DEBUG_PORT.print(F("            C#4#"));
+    DEBUG_PORT.print(F("C#4#"));
     DEBUG_PORT.print(lightNum);
     DEBUG_PORT.print(F("#"));
     if ((ecu_data.turnSwitchValueRAW & 0x04) >> 2) {
@@ -1907,7 +1912,7 @@ void chassisECUdata() {
     ecu_data.shiftValueRAW = ((mcpAValue & 0x0018) >> 3);
     
     if (((mcpAValue & 0x4000) >> 14) == 1) {
-    ecu_data.engineValueRAW = !ecu_data.engineValueRAW;
+      ecu_data.engineValueRAW = !ecu_data.engineValueRAW;
     }
     
     ecu_data.turnSwitchValueRAW = ((mcpAValue & 0x1800) >> 11);
