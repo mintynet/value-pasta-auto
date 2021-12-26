@@ -196,7 +196,7 @@ void loop() {
     case 4:
       //strip.setAllLedsColor(0x00);
       if (paramters[2] == 0) {
-        //side
+        //off
         strip.setLedColor(1, 0x0, 0x0, 0x0);
         strip.setLedColor(2, 0x0, 0x0, 0x0);
         strip.setLedColor(3, 0x0, 0x0, 0x0);
