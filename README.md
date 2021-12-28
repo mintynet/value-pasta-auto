@@ -32,8 +32,10 @@ The micro controller hardware used in #value-pasta-auto for the ECU's is the [Te
 |0805 22pF Capacitor|C10,C11|2|
 |1206 10uF Capacitor|C107|1|
 |2pin 2.54 header & jumper|H1,H2,H3,H4|4|
-|MOLEX 12A-347290120|H5|1|
-|MOLEX 20A-347290200|H6|1|
+|MOLEX 12A-347290120 Plug|H5|1|
+|MOLEX 12A-346910120 Socket|H5|1|
+|MOLEX 20A-347290200 Plug|H6|1|
+|MOLEX 20A-346910200 Socket|H6|1|
 |SN65HVD230DR CAN Transceiver|U1,U2,U4|3|
 |MCP2562FD-E/SN CAN-FD Transceiver|U3|1|
 |MCP2515-I/SO CAN Controller|U5|1|
@@ -62,7 +64,8 @@ The I/O board is used for the Powertrain and the Chassis ECU's. These are built 
 |3pin 2.54 header|AN0,AN1,AN2,AN3|4|
 |2pin 2.54 header|H2|1|
 |MCP23017-E/SO IO expander|U1,U2|2|
-|MOLEX 20A-347290200|U3|1|
+|MOLEX 20A-347290200 Plug|U3|1|
+|MOLEX 20A-346910200 Socket|U3|1|
 |AMS1117-3.3 Voltage regulator|U4|1|
 |0805 4.7k Resistor|R1,R2|2|
 
@@ -119,7 +122,7 @@ An Arduino based remote car can be controlled using #Value-Pasta-Auto. Minor cha
 ## CAN message detail per bus
 The following files show the CAN msgs that are used by #value-pasta-auto as per the original design docs from [pasta-auto bus definition](https://github.com/pasta-auto/PASTA1.0/blob/master/doc/PASTA1.0%20CAN-ID%20List%20v1.0E.pdf)
 <br>
-![Can bus definitions](/canbus.md)
+![Can bus definitions for value-pasta-auto](/canbus.md)
 
 ## Details of the original pasta-auto can be found at the following locations
 - GitHub: [pasta-auto](https://github.com/pasta-auto)
