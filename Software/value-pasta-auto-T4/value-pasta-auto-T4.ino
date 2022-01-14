@@ -7,7 +7,7 @@
 #include <Adafruit_MCP23017.h>                    // version 1.2.0
 #include <Adafruit_NeoPixel.h>                    // version 1.7.0
 #include <ResponsiveAnalogRead.h>                 // version 1.2.1
-#define             strVERSION  20211209          // date of upload
+#define             strVERSION  20220114          // date of upload
 
 // 0 Powertrain
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> Can0;   // ALL: CAN0 Bus
@@ -129,6 +129,13 @@ unsigned int cnt2       = 0;                      // GW: Used to count msg/s
 unsigned int cnt30      = 0;                      // GW: Used to count msg/s
 unsigned int cnt31      = 0;                      // GW: Used to count msg/s
 unsigned int cnt32      = 0;                      // GW: Used to count msg/s
+
+unsigned long debounceDelay           = 50;       // CH: Used to debounce push switches
+unsigned long lastEngineDebounceTime  = 0;        // CH: Used to debounce push switches
+unsigned long lastPBrakeDebounceTime  = 0;        // CH: Used to debounce push switches
+unsigned long lastHazardDebounceTime  = 0;        // CH: Used to debounce push switches
+unsigned long lastHornDebounceTime    = 0;        // CH: Used to debounce push switches
+unsigned long lastLockDebounceTime    = 0;        // CH: Used to debounce push switches
 
 // Powertrain
 // 100Hz
@@ -1911,19 +1918,19 @@ void chassisECUdata() {
     || (ecu_data.steeringValueRAW != ecu_data_old.steeringValueRAW)) {
     ecu_data.shiftValueRAW = ((mcpAValue & 0x0018) >> 3);
     
-    if (((mcpAValue & 0x4000) >> 14) == 1) {
-      ecu_data.engineValueRAW = !ecu_data.engineValueRAW;
-    }
-    
     ecu_data.turnSwitchValueRAW = ((mcpAValue & 0x1800) >> 11);
+    
     if (((mcpAValue & 0x2000) >> 13) == 1) {
       ecu_data.hazardValueRAW = !ecu_data.hazardValueRAW;
     }
-    if (ecu_data.hazardValueRAW) {
-      ecu_data.turnSwitchValueRAW = (ecu_data.turnSwitchValueRAW | 4);
+    if(ecu_data.hazardValueRAW != ecu_data_old.hazardValueRAW) {
+      lastHazardDebounceTime = millis();
     }
-    
-    ecu_data.hornValueRAW = ((mcpAValue & 0x0080) >> 7); // was 0x0090 ??
+    if ((millis() - lastHazardDebounceTime) > debounceDelay) {
+      if (ecu_data.hazardValueRAW) {
+        ecu_data.turnSwitchValueRAW = (ecu_data.turnSwitchValueRAW | 4);
+      }
+    }
     
     curLightBit0 = ((mcpAValue & 0x0001) >> 0);
     curLightBit1 = ((mcpAValue & 0x0002) >> 1);
@@ -1949,10 +1956,6 @@ void chassisECUdata() {
     }
     preLightBit0 = curLightBit0;
     ecu_data.lightFlValueRAW = ((mcpAValue & 0x0004) >> 2);
-    
-    if (((mcpAValue & 0x8000) >> 15) == 1) {
-    ecu_data.parkingValueRAW = !ecu_data.parkingValueRAW;
-    }
     
     curWiperFrBit0 = ((mcpAValue & 0x0100) >> 8);
     curWiperFrBit1 = ((mcpAValue & 0x0200) >> 9);
@@ -1982,16 +1985,47 @@ void chassisECUdata() {
     
     ecu_data.wiperRSwValueRAW = (((mcpAValue & 0x0020) >> 5)|((mcpAValue & 0x0040) >> 3));
 
-    boolean lLock = ((mcpBValue & 0x0004) >> 2);
-    boolean rLock = ((mcpBValue & 0x0008) >> 3);
-
-    if (lLock | rLock) {
-      ecu_data.doorLockValueRAW = (ecu_data.doorLockValueRAW ^ lLock)^(rLock << 1);
-    }
-    
     ecu_data.lDoorSwValueRAW = ((mcpBValue & 0x0003) >> 0);
     
     ecu_data.rDoorSwValueRAW = ((mcpBValue & 0x0300) >> 8);
+
+    if(ecu_data.engineValueRAW != ecu_data_old.engineValueRAW) {
+      lastEngineDebounceTime = millis();
+    }
+    if ((millis() - lastEngineDebounceTime) > debounceDelay) {
+      if (((mcpAValue & 0x4000) >> 14) == 1) {
+        ecu_data.engineValueRAW = !ecu_data.engineValueRAW;
+      }
+    }
+    
+    if(ecu_data.hornValueRAW != ecu_data_old.hornValueRAW) {
+      lastHornDebounceTime = millis();
+    }
+    if ((millis() - lastHornDebounceTime) > debounceDelay) {
+      ecu_data.hornValueRAW = ((mcpAValue & 0x0080) >> 7);
+    }
+    
+    if(ecu_data.parkingValueRAW != ecu_data_old.parkingValueRAW) {
+      lastPBrakeDebounceTime = millis();
+    }
+    if ((millis() - lastPBrakeDebounceTime) > (debounceDelay*2)) {
+      if (((mcpAValue & 0x8000) >> 15) == 1) {
+        ecu_data.parkingValueRAW = !ecu_data.parkingValueRAW;
+      }
+    }
+
+    if(ecu_data.doorLockValueRAW != ecu_data_old.doorLockValueRAW) {
+      lastLockDebounceTime = millis();
+    }
+
+    if ((millis() - lastLockDebounceTime) > debounceDelay) {
+      boolean lLock = ((mcpBValue & 0x0004) >> 2);
+      boolean rLock = ((mcpBValue & 0x0008) >> 3);
+      if (lLock | rLock) {
+        ecu_data.doorLockValueRAW = (ecu_data.doorLockValueRAW ^ lLock)^(rLock << 1);
+      }
+    }
+    
     if (gDebug) {
       DEBUG_PORT.println(F("************************************************************"));
       DEBUG_PORT.print(F("mcpAValue          : "));
