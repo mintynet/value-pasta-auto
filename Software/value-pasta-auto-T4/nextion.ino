@@ -8,7 +8,7 @@ void nextion_setup() {
   NEXTION_PORT.print(F("sleep=0")); //Wake Up Nextion
   endNextion();
   delay(500);
-  NEXTION_PORT.print(F("dim=32"));  //Change brightness 0-100
+  NEXTION_PORT.print(F("dim=50"));  //Change brightness 0-100
   endNextion();
   NEXTION_PORT.print(F("page 0"));  //Page 0
   endNextion();
