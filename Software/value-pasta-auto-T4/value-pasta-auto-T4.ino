@@ -7,7 +7,7 @@
 #include <Adafruit_MCP23017.h>                    // version 1.2.0
 #include <Adafruit_NeoPixel.h>                    // version 1.7.0
 #include <ResponsiveAnalogRead.h>                 // version 1.2.1
-#define             strVERSION  20220114          // date of upload
+#define             strVERSION  20220128          // date of upload
 
 // 0 Powertrain
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> Can0;   // ALL: CAN0 Bus
