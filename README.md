@@ -112,7 +112,7 @@ MCP23017 I/O Inputs unless otherwise stated
 |Ana3|USED FOR BLUETOOTH TX|
 
 ## LED screens
-Powertrain, Body and Chassis ECU's have 3.5" NEXTION HMI [NEXTION](https://www.itead.cc/display/nextion.html) serial based screens. These are connected via the I/O board where it is present.
+Powertrain, Body and Chassis ECU's have 3.5" NEXTION HMI [NEXTION](https://www.itead.cc/display/nextion.html) serial based screens. These are connected via the I/O board where it is present. The default baudrate has been changed on the screen using bauds=500000 when connected to the nextion IDE.
 
 ## Arduino Bluetooth CAR
 An Arduino based remote car can be controlled using #Value-Pasta-Auto. Minor changes for the lights were made to the code to control the lights from Value-Pasta-Auto. Arduino Sketch is in the Software folder.
