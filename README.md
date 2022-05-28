@@ -71,6 +71,7 @@ The I/O board is used for the Powertrain and the Chassis ECU's. These are built 
 
 * Chassis ECU I/O board
 MCP23017 I/O Inputs unless otherwise stated
+PIN D2 needs to be grounded for ECU ID
 
 |Function port A MCP23017A|PIN|Function port B MCP23017A| |Function port A MCP23017B|PIN|Function port B MCP23017B|
 |:---|:---:|---:|:---:|:---|:---:|---:|
@@ -92,6 +93,7 @@ MCP23017 I/O Inputs unless otherwise stated
 
 * Powertrain ECU I/O board
 MCP23017 I/O Inputs unless otherwise stated
+Both PIN D2 & D3 need to be grounded for ECU ID
 
 |Function port A MCP23017A|PIN|Function port B MCP23017A| |Function port A MCP23017B|PIN|Function port B MCP23017B|
 |:---|:---:|---:|:---:|:---|:---:|---:|
@@ -112,7 +114,58 @@ MCP23017 I/O Inputs unless otherwise stated
 |Ana3|USED FOR BLUETOOTH TX|
 
 ## LED screens
-Powertrain, Body and Chassis ECU's have 3.5" NEXTION HMI [NEXTION](https://www.itead.cc/display/nextion.html) serial based screens, either Discovery or Enhanced versions can be used. These are connected via the I/O board where it is present. The default baudrate has been changed on the screen using bauds=500000 when connected to the nextion IDE.
+Powertrain, Body and Chassis ECU's have 3.5" NEXTION HMI [NEXTION](https://www.itead.cc/display/nextion.html) serial based screens, either Discovery or Enhanced versions can be used. These are connected via the I/O board where it is present, the Body ECU is connected directly to the Nextion display. The default baudrate has been changed on the screen using bauds=500000 when connected to the nextion IDE.
+
+## Wiring between the ECU and I/O board
+* Chassis & Powertrain interconnect - GREY ECU end to BLACK I/O end
+
+| Connection | Use | Colour |
+|:---|:---:|---:|
+| 1| Gnd| Black|
+| 2| A0| Orange|
+| 3| A2| Grey|
+| 4| 3.3v| N/C|
+| 5| 5v| Red|
+| 6| TX5| Yellow|
+| 7| SDA0| Purple|
+| 8| INTA1| N/C|
+| 9| INTA2| N/C|
+| 10| D2| Grey|
+| 11| Gnd| N/C|
+| 12| A1| Brown|
+| 13| A3| White|
+| 14| 3.3v| N/C|
+| 15| 5v| N/C|
+| 16| RX5| Blue|
+| 17| SCL0| Green|
+| 18| INTB1| N/C|
+| 19| INTB2| N/C|
+| 20| D3| White|
+
+* Body interconnect - GREY ECU end to NEXTION display
+
+| Connection | Use | Colour |
+|:---|:---:|---:|
+| 1| Gnd| Black|
+| 2| A0| N/C|
+| 3| A2| N/C|
+| 4| 3.3v| N/C|
+| 5| 5v| Red|
+| 6| TX5| Yellow|
+| 7| SDA0| N/C|
+| 8| INTA1| N/C|
+| 9| INTA2| N/C|
+| 10| D2| N/C|
+| 11| Gnd| White to PIN 20|
+| 12| A1| N/C|
+| 13| A3| N/C|
+| 14| 3.3v| N/C|
+| 15| 5v| N/C|
+| 16| RX5| Blue|
+| 17| SCL0| N/C|
+| 18| INTB1| N/C|
+| 19| INTB2| N/C|
+| 20| D3| White to PIN 11|
 
 ## Arduino Bluetooth CAR
 An Arduino based remote car can be controlled using #Value-Pasta-Auto. Minor changes for the lights were made to the code to control the lights from Value-Pasta-Auto. Arduino Sketch is in the Software folder.
