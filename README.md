@@ -71,7 +71,6 @@ The I/O board is used for the Powertrain and the Chassis ECU's. These are built 
 
 * Chassis ECU I/O board
 MCP23017 I/O Inputs unless otherwise stated
-PIN D2 needs to be grounded for ECU ID
 
 |Function port A MCP23017A|PIN|Function port B MCP23017A| |Function port A MCP23017B|PIN|Function port B MCP23017B|
 |:---|:---:|---:|:---:|:---|:---:|---:|
@@ -91,9 +90,10 @@ PIN D2 needs to be grounded for ECU ID
 |Ana2|Steering Potentiometer|
 |Ana3|N/A|
 
+PIN D2 on H2 needs to be grounded for ECU ID
+
 * Powertrain ECU I/O board
 MCP23017 I/O Inputs unless otherwise stated
-Both PIN D2 & D3 need to be grounded for ECU ID
 
 |Function port A MCP23017A|PIN|Function port B MCP23017A| |Function port A MCP23017B|PIN|Function port B MCP23017B|
 |:---|:---:|---:|:---:|:---|:---:|---:|
@@ -112,6 +112,8 @@ Both PIN D2 & D3 need to be grounded for ECU ID
 |Ana1|N/A|
 |Ana2|USED FOR BLUETOOTH RX|
 |Ana3|USED FOR BLUETOOTH TX|
+
+Both PIN D2 & D3 on H2 need to be grounded for ECU ID
 
 ## LED screens
 Powertrain, Body and Chassis ECU's have 3.5" NEXTION HMI [NEXTION](https://www.itead.cc/display/nextion.html) serial based screens, either Discovery or Enhanced versions can be used. These are connected via the I/O board where it is present, the Body ECU is connected directly to the Nextion display. The default baudrate has been changed on the screen using bauds=500000 when connected to the nextion IDE.
