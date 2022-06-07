@@ -1,13 +1,13 @@
-                                                  // Teensyduino 1.53
-                                                  // Arduino 1.8.13
+                                                  // Teensyduino 1.55
+                                                  // Arduino 1.8.19
 #include <SPI.h>                                  // version 1.0
 #include <FlexCAN_T4.h>                           // version 2018
 #include <mcp_can.h>                              // version 1.5 25/09/17 from https://github.com/coryjfowler/MCP_CAN_lib modified for 10MHz SPI
 #include "mcp_minty.h"
-#include <Adafruit_MCP23017.h>                    // version 1.2.0
-#include <Adafruit_NeoPixel.h>                    // version 1.7.0
+#include <Adafruit_MCP23017.h>                    // version 1.3.0
+#include <Adafruit_NeoPixel.h>                    // version 1.8.1
 #include <ResponsiveAnalogRead.h>                 // version 1.2.1
-#define             strVERSION  20220128          // date of upload
+#define             strVERSION  20220607          // date of upload
 
 // 0 Powertrain
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> Can0;   // ALL: CAN0 Bus
@@ -2180,13 +2180,6 @@ void ecu_setup() {
   }
 
   // Setup MCP23017s
-  if (ecuNumber<2) {
-    mcpA.begin();
-    for (int i=0; i<16; i++) {
-      mcpA.pinMode(i,INPUT);
-      mcpA.pullUp(i,HIGH);
-    }
-  } 
   if (ecuNumber==1) {
     // Setup MCP23017s
     mcpB.begin(1);
@@ -2201,6 +2194,13 @@ void ecu_setup() {
     mcpB.digitalWrite(14,LOW);
     mcpB.digitalWrite(15,LOW);
   }
+  if (ecuNumber<2) {
+    mcpA.begin();
+    for (int i=0; i<16; i++) {
+      mcpA.pinMode(i,INPUT);
+      mcpA.pullUp(i,HIGH);
+    }
+  } 
   
   // Setup Timers
   if (ecuNumber<3) {
