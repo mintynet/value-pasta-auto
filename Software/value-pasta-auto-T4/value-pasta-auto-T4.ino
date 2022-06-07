@@ -4,7 +4,7 @@
 #include <FlexCAN_T4.h>                           // version 2018
 #include <mcp_can.h>                              // version 1.5 25/09/17 from https://github.com/coryjfowler/MCP_CAN_lib modified for 10MHz SPI
 #include "mcp_minty.h"
-#include <Adafruit_MCP23017.h>                    // version 1.3.0
+#include <Adafruit_MCP23017.h>                    // version 1.2.0
 #include <Adafruit_NeoPixel.h>                    // version 1.8.1
 #include <ResponsiveAnalogRead.h>                 // version 1.2.1
 #define             strVERSION  20220607          // date of upload
