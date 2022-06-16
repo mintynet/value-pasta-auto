@@ -1,13 +1,15 @@
                                                   // Teensyduino 1.55
                                                   // Arduino 1.8.19
 #include <SPI.h>                                  // version 1.0
+#include <Wire.h>                                 // version 1.0
 #include <FlexCAN_T4.h>                           // version 2018
 #include <mcp_can.h>                              // version 1.5 25/09/17 from https://github.com/coryjfowler/MCP_CAN_lib modified for 10MHz SPI
 #include "mcp_minty.h"
-#include <Adafruit_MCP23017.h>                    // version 1.2.0
-#include <Adafruit_NeoPixel.h>                    // version 1.8.1
+#include <Adafruit_MCP23X17.h>                    // version 2.1.0
+//#include <Adafruit_BusIO.h>                     // version 1.11.6
+#include <Adafruit_NeoPixel.h>                    // version 1.10.5
 #include <ResponsiveAnalogRead.h>                 // version 1.2.1
-#define             strVERSION  20220607          // date of upload
+#define             strVERSION  20220616          // date of upload
 
 // 0 Powertrain
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> Can0;   // ALL: CAN0 Bus
@@ -39,8 +41,8 @@ MCP_CAN             CANMCP3(CAN3_CS);             // GW: CAN3 interface using CS
 MCP_CAN_MINTY       CANMCP3MINTY(CAN3_CS,CAN3_TX0BUF);
                                                   // GW: CAN3 library to use TX0BUF for sending
 
-Adafruit_MCP23017   mcpA;                         // PT: & CH: MCP23017
-Adafruit_MCP23017   mcpB;                         // CH:  MCP23017
+Adafruit_MCP23X17   mcpA;                         // PT: & CH: MCP23017
+Adafruit_MCP23X17   mcpB;                         // CH:  MCP23017
 
 #define             MAX_MSGS    32                // PT/CH/BO Used for triggered msgs
 #define             MAX_PIXELS  1                 // GW: Number of Neopixels
@@ -48,7 +50,7 @@ Adafruit_MCP23017   mcpB;                         // CH:  MCP23017
 #define             ECU_NUM_LO  3                 // ALL: Used to ID ECU
 #define             NEO_PIN     4                 // GW: Pin for Neopixel/LED
 
-Adafruit_NeoPixel pixels = Adafruit_NeoPixel(MAX_PIXELS, NEO_PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel pixels(MAX_PIXELS, NEO_PIN, NEO_GRB + NEO_KHZ800);
                                                   // GW: Define Neopixel
 
 const byte ana0x01A     = A0;                     // PT: CH: Analog0
@@ -2180,12 +2182,19 @@ void ecu_setup() {
   }
 
   // Setup MCP23017s
+  if (ecuNumber<2) {
+    mcpA.begin_I2C(0x20);
+    for (int i=0; i<16; i++) {
+      mcpA.pinMode(i,INPUT_PULLUP);
+      //mcpA.pullUp(i,HIGH);
+    }
+  } 
   if (ecuNumber==1) {
     // Setup MCP23017s
-    mcpB.begin(1);
+    mcpB.begin_I2C(0x21);
     for (int i=0; i<16; i++) {
-      mcpB.pinMode(i,INPUT);
-      mcpB.pullUp(i,HIGH);
+      mcpB.pinMode(i,INPUT_PULLUP);
+      //mcpB.pullUp(i,HIGH);
     }
     mcpB.pinMode(7,OUTPUT);
     mcpB.pinMode(14,OUTPUT);
@@ -2194,13 +2203,6 @@ void ecu_setup() {
     mcpB.digitalWrite(14,LOW);
     mcpB.digitalWrite(15,LOW);
   }
-  if (ecuNumber<2) {
-    mcpA.begin();
-    for (int i=0; i<16; i++) {
-      mcpA.pinMode(i,INPUT);
-      mcpA.pullUp(i,HIGH);
-    }
-  } 
   
   // Setup Timers
   if (ecuNumber<3) {
