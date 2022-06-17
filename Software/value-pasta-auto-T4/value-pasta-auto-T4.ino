@@ -9,7 +9,7 @@
 //#include <Adafruit_BusIO.h>                     // version 1.11.6
 #include <Adafruit_NeoPixel.h>                    // version 1.10.5
 #include <ResponsiveAnalogRead.h>                 // version 1.2.1
-#define             strVERSION  20220616          // date of upload
+#define             strVERSION  20220617          // date of upload
 
 // 0 Powertrain
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> Can0;   // ALL: CAN0 Bus
@@ -1922,13 +1922,13 @@ void chassisECUdata() {
     
     ecu_data.turnSwitchValueRAW = ((mcpAValue & 0x1800) >> 11);
     
-    if (((mcpAValue & 0x2000) >> 13) == 1) {
-      ecu_data.hazardValueRAW = !ecu_data.hazardValueRAW;
-    }
     if(ecu_data.hazardValueRAW != ecu_data_old.hazardValueRAW) {
       lastHazardDebounceTime = millis();
     }
     if ((millis() - lastHazardDebounceTime) > debounceDelay) {
+      if (((mcpAValue & 0x2000) >> 13) == 1) {
+        ecu_data.hazardValueRAW = !ecu_data.hazardValueRAW;
+      }
       if (ecu_data.hazardValueRAW) {
         ecu_data.turnSwitchValueRAW = (ecu_data.turnSwitchValueRAW | 4);
       }
@@ -1994,7 +1994,7 @@ void chassisECUdata() {
     if(ecu_data.engineValueRAW != ecu_data_old.engineValueRAW) {
       lastEngineDebounceTime = millis();
     }
-    if ((millis() - lastEngineDebounceTime) > debounceDelay) {
+    if ((millis() - lastEngineDebounceTime) > (debounceDelay*10)) {
       if (((mcpAValue & 0x4000) >> 14) == 1) {
         ecu_data.engineValueRAW = !ecu_data.engineValueRAW;
       }
@@ -2010,7 +2010,7 @@ void chassisECUdata() {
     if(ecu_data.parkingValueRAW != ecu_data_old.parkingValueRAW) {
       lastPBrakeDebounceTime = millis();
     }
-    if ((millis() - lastPBrakeDebounceTime) > (debounceDelay*2)) {
+    if ((millis() - lastPBrakeDebounceTime) > (debounceDelay*10)) {
       if (((mcpAValue & 0x8000) >> 15) == 1) {
         ecu_data.parkingValueRAW = !ecu_data.parkingValueRAW;
       }
