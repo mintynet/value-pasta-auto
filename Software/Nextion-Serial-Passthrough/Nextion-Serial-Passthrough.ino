@@ -1,5 +1,5 @@
-                                                  // Teensyduino 1.53
-                                                  // Arduino 1.8.13
+                                                  // Teensyduino 1.56
+                                                  // Arduino 1.8.19
 
 /**************************************************
  setup()
@@ -12,7 +12,8 @@ void setup() {
 
 /**************************************************
  loop()
-**************************************************/void loop() {
+**************************************************
+/void loop() {
   // read from port 1, send to port 0:
   if (Serial5.available()) {
     int inByte = Serial5.read();
