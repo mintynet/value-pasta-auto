@@ -1,4 +1,4 @@
-                                                  // Teensyduino 1.55
+                                                  // Teensyduino 1.56
                                                   // Arduino 1.8.19
 #include <SPI.h>                                  // version 1.0
 #include <Wire.h>                                 // version 1.0
@@ -9,7 +9,7 @@
 //#include <Adafruit_BusIO.h>                     // version 1.11.6
 #include <Adafruit_NeoPixel.h>                    // version 1.10.5
 #include <ResponsiveAnalogRead.h>                 // version 1.2.1
-#define             strVERSION  20220617          // date of upload
+#define             strVERSION  20230311          // date of upload
 
 // 0 Powertrain
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> Can0;   // ALL: CAN0 Bus
