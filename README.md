@@ -116,7 +116,7 @@ MCP23017 I/O Inputs unless otherwise stated
 Both PIN D2 & D3 on H2 need to be grounded for ECU ID
 
 ## LED screens
-Powertrain, Body and Chassis ECU's have 3.5" NEXTION HMI [NEXTION](https://www.itead.cc/display/nextion.html) serial based screens, either Discovery or Enhanced versions can be used. These are connected via the I/O board where it is present, the Body ECU is connected directly to the Nextion display. The default baudrate has been changed on the screen using bauds=500000 when connected to the nextion IDE.
+Powertrain, Body and Chassis ECU's have 3.5" NEXTION HMI [NEXTION](https://www.itead.cc/display/nextion.html) serial based screens, either Discovery or Enhanced versions can be used. These are connected via the I/O board where it is present, the Body ECU is connected directly to the Nextion display. The default baudrate has been changed on the screen using bauds=250000 when connected to the nextion IDE.
 
 ## Wiring between the ECU and I/O board
 * Chassis & Powertrain interconnect - GREY ECU end to BLACK I/O end
