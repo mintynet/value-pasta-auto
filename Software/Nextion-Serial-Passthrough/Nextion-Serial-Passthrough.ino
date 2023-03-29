@@ -12,15 +12,15 @@ void setup() {
 
 /**************************************************
  loop()
-**************************************************
-/void loop() {
-  // read from port 1, send to port 0:
+**************************************************/
+void loop() {
+  // read from port 5, send to port 0:
   if (Serial5.available()) {
     int inByte = Serial5.read();
     Serial.write(inByte);
   }
 
-  // read from port 0, send to port 1:
+  // read from port 0, send to port 5:
   if (Serial.available()) {
     int inByte = Serial.read();
     Serial5.write(inByte);
